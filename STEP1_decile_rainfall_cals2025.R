@@ -36,7 +36,7 @@ library(stringr)
 ## Set location of file --------------------------------------------------------
 
 #Folder for met files
-current.folder <- "H:/Output-2/Analysis/Scripts/Jackie/"
+current.folder <- "H:/Output-2/Analysis/Scripts/Jackie/Karoonda_025006/"
 
 # find the files that you want
 list.of.files <- list.files(current.folder, ".csv",full.names=T) #the trick is getting the full name
@@ -154,8 +154,8 @@ rm(numb_days_end, numb_days_start, numb_days_year_before_end, Year_before_end, C
 ## Save the df ready for Step 2 --------------------------------------------------------
 
 
-write_csv(climate, file = paste0(current.folder,"output_of_steps/","Step1.csv"))
+write_csv(climate, file = paste0(current.folder,"Step1.csv"))
 write_csv(details_about_start_end_climate_data, 
-          file = paste0(current.folder,"output_of_steps/","Step1_details_about_start_end_climate_data.csv"))
+          file = paste0(current.folder,"Step1_details_about_start_end_climate_data.csv"))
 
 
