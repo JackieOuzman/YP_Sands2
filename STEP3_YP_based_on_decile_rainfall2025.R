@@ -84,7 +84,7 @@ plot1 <-decile_table_long %>%
   ggplot(aes(x = deciles_names , y = value, group=Cal_type) )+
   geom_point(aes(color=Cal_type))+
   geom_line(aes(color=Cal_type))+
-  labs(title = "YP based on histrical decile years",
+  labs(title = "YP based on historical  decile years",
        subtitle = paste0("Station name: ", distinct(decile_table, Station_name ), 
                          " - ", distinct(decile_table, Station_number )),
        caption = paste0("Years included : ", distinct(decile_table,Years_included)),
