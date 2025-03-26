@@ -31,27 +31,60 @@ list.of.files #with path
 
 
 ## Download all of the decile table  -------------------------------------------
-decile_table <- read_csv("H:/Output-2/Analysis/Scripts/Jackie/Karoonda_025006/decile_table.csv")
-decile_table
-
+GS_decile_table <- read_csv("H:/Output-2/Analysis/Scripts/Jackie/Karoonda_025006/GS_decile_table.csv")
+GS_decile_table
+Summer_decile_table <- read_csv("H:/Output-2/Analysis/Scripts/Jackie/Karoonda_025006/Summer_decile_table.csv")
+Summer_decile_table
 
 ## add calculations to the table ------------------------------------------------
+str(Summer_decile_table)
+
+Summer_decile_table <- Summer_decile_table %>%
+  mutate(Baseline_Estimated_Starting_water = Summer_decile_max_rain * 0.25, # Estimated Starting water = (25% of Summer Rainfall)
+         Frontier_Estimated_Starting_water  = Summer_decile_max_rain * 0.30) # Estimated Starting water = (30% of Summer Rainfall)
+################################################################################
+#get decile 5 Baseline_Estimated_Starting_water
+
+D5_Baseline_Est_Start_water <- Summer_decile_table %>% 
+  filter(Summer_deciles_names =="decile_5" ) %>% 
+  select(Baseline_Estimated_Starting_water)
+
+D5_Baseline_Est_Start_water <-   D5_Baseline_Est_Start_water$Baseline_Estimated_Starting_water
+D5_Baseline_Est_Start_water
 
 
-decile_table <- decile_table %>%
+D5_Frontier_Est_Start_water <- Summer_decile_table %>% 
+  filter(Summer_deciles_names =="decile_5" ) %>% 
+  select(Frontier_Estimated_Starting_water)
+
+D5_Frontier_Est_Start_water <- D5_Frontier_Est_Start_water$Frontier_Estimated_Starting_water
+D5_Frontier_Est_Start_water
+
+str(GS_decile_table)
+################################################################################
+D5_Baseline_Est_Start_water
+D5_Frontier_Est_Start_water
+################################################################################
+GS_decile_table <- GS_decile_table %>%
   mutate(
-    Cal_Est_Evaporation_base = decile_max_rain *0.4,
-    Cal_YP_base = ((decile_max_rain+27)-(Cal_Est_Evaporation_base))*20,
-    Cal_EYP_base = Cal_YP_base*0.8,
+    Cal_Est_Evaporation_base = (GS_decile_max_rain *0.4), # (40% of GSR)
+      Cal_YP_base = ((GS_decile_max_rain +
+                       D5_Baseline_Est_Start_water)-
+                       (Cal_Est_Evaporation_base))*20 ,
+     Cal_EYP_base = (Cal_YP_base*0.8), # 80% of Yield potential 
 
-    Cal_Est_Evaporation_Front = 0.18*decile_max_rain+15,
-    Cal_YP_Front = ((decile_max_rain+27-Cal_Est_Evaporation_Front)*26),
-    Cal_EYP_Front = Cal_YP_Front*0.8
+    Cal_Est_Evaporation_Front = (0.18*GS_decile_max_rain+15), # using regression equation 
+      Cal_YP_Front = ((GS_decile_max_rain+
+                         D5_Frontier_Est_Start_water)-
+                         (Cal_Est_Evaporation_Front))*26,
+     Cal_EYP_Front = Cal_YP_Front*0.8 #80% of Yield potential 
     )
   
   
-decile_table
-decile_table_long <- decile_table %>% 
+GS_decile_table
+################################################################################
+# make df long to help with plotting different approaches in calculating YP
+GS_decile_table_long <- GS_decile_table %>% 
   pivot_longer(
     cols = starts_with("Cal"),
     names_to = "Cal_type",
@@ -59,16 +92,19 @@ decile_table_long <- decile_table %>%
     values_drop_na = TRUE
   )
 
-decile_table_long
+GS_decile_table_long
 
-decile_table_long$deciles_names <- factor(decile_table_long$deciles_names, ordered = TRUE, 
+################################################################################
+# order the deciles to help with plotting
+
+GS_decile_table_long$GS_deciles_names <- factor(GS_decile_table_long$GS_deciles_names , ordered = TRUE, 
                                 levels = c("decile_1", "decile_2", "decile_3", "decile_4",
                                            "decile_5", "decile_6", "decile_7", "decile_8",
                                            "decile_9","decile_10" ))
 
 
-
-decile_table_long <- decile_table_long %>% 
+## assign names to match Kenton names in his excel sheets
+GS_decile_table_long <- GS_decile_table_long %>% 
   mutate(
     Cal_type = case_when(
       Cal_type ==  "Cal_EYP_base" ~  "Baseline Practice",
@@ -78,16 +114,20 @@ decile_table_long <- decile_table_long %>%
     ))
 
 
-plot1 <-decile_table_long %>% 
+################################################################################
+#Plot YP
+str(GS_decile_table_long)
+plot1 <-GS_decile_table_long %>% 
   filter(Cal_type =="Baseline Practice" | Cal_type =="New Frontier" | Cal_type == "New Frontier Long term") %>% 
   
-  ggplot(aes(x = deciles_names , y = value, group=Cal_type) )+
+  ggplot(aes(x = GS_deciles_names , y = value, group=Cal_type) )+
   geom_point(aes(color=Cal_type))+
   geom_line(aes(color=Cal_type))+
   labs(title = "YP based on historical  decile years",
-       subtitle = paste0("Station name: ", distinct(decile_table, Station_name ), 
-                         " - ", distinct(decile_table, Station_number )),
-       caption = paste0("Years included : ", distinct(decile_table,Years_included)),
+       subtitle = paste0("Station name: ", distinct(GS_decile_table, Station_name ), 
+                         " - ", distinct(GS_decile_table, Station_number )),
+       caption = paste0("Years included : ", distinct(GS_decile_table,Years_included),
+                        ". GS period:",  distinct(GS_decile_table,GS_period)),
        y = "Yield kg/ha",
        x = "",
        colour = "" #removed the legend title
@@ -95,5 +135,9 @@ plot1 <-decile_table_long %>%
 plot1
 
 ggsave(plot = plot1,
-       filename =  paste0("H:/Output-2/Analysis/Scripts/Jackie/Karoonda_025006/","YP based on decile years.png"), 
+       filename =  paste0("H:/Output-2/Analysis/Scripts/Jackie/Karoonda_025006/","Plot_YP based on GS decile years.png"), 
        width = 20, height = 12, units = "cm")
+
+
+write_csv(GS_decile_table_long, 
+          file = paste0("H:/Output-2/Analysis/Scripts/Jackie/Karoonda_025006/","GS_decile_table_withYP_cals_long.csv"))
