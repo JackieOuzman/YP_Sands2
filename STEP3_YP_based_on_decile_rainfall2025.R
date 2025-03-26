@@ -35,7 +35,7 @@ decile_table <- read_csv("H:/Output-2/Analysis/Scripts/Jackie/Karoonda_025006/de
 decile_table
 
 
-## add calulations to the tabel ------------------------------------------------
+## add calculations to the table ------------------------------------------------
 
 
 decile_table <- decile_table %>%
