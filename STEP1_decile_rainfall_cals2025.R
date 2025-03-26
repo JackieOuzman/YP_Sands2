@@ -47,7 +47,7 @@ list.of.files #with path
 
 ## Download all of the climate data and format it -------------------------------
 
-climate <- read.table(list.of.files, 
+climate <- read.table(paste0(current.folder, "metfile_ Karoonda_025006.csv"), 
                       skip = 22, header = TRUE, sep ="")
 climate <- climate [-1,]
 climate <- climate %>% 
@@ -71,13 +71,13 @@ climate <- climate %>%
 
 ##Add some meta data back into the file  
 ## station number
-station_number <- read_csv(list.of.files,
+station_number <- read_csv(paste0(current.folder, "metfile_ Karoonda_025006.csv"),
                            col_names = FALSE, skip = 1)
 station_number <-station_number[1,1] #just the row with the download date
 station_number <-stringr::str_extract(station_number, "[[:digit:]]+") #just the numbers
 
 ## station name
-station_name <- read_csv(list.of.files, 
+station_name <- read_csv(paste0(current.folder, "metfile_ Karoonda_025006.csv"), 
                          col_names = FALSE, skip = 2)
 station_name <-station_name[1,1]
 station_name <- station_name %>% stringr::str_replace("!station name =", "")
