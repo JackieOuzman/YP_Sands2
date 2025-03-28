@@ -1,0 +1,98 @@
+---
+title: "Test_R_markdown_shiny"
+author: "Jackie"
+date: "2025-03-28"
+output: html_document
+runtime: shiny
+---
+
+```{r load_libary, include=FALSE}
+library(ggplot2)
+library(readxl)
+library(tidyverse)
+library(lubridate)
+library(data.table)
+library(stringr)
+
+```
+
+This R Markdown document is made interactive using Shiny. Unlike the more traditional workflow of creating static reports, you can now create documents that allow your readers to change the assumptions underlying your analysis and see the results immediately. 
+
+To learn more, see [Interactive Documents](http://rmarkdown.rstudio.com/authoring_shiny.html).
+
+## Inputs and Outputs
+
+You can embed Shiny inputs and outputs in your document. Outputs are automatically updated whenever inputs change.  This demonstrates how a standard R plot can be made interactive by wrapping it in the Shiny `renderPlot` function. The `selectInput` and `sliderInput` functions create the input widgets used to drive the plot.
+
+```{r sites_selction, echo=FALSE}
+# creating a data frame
+list_of_sites <- data.frame(
+    Name = c("Karoonda", "Wharminda", "Copeville", "Walpeup" , "Bute", "Balaklava", "Annuello"), ### add more here when you have the info
+    Number = c("25006", "18113", "25003", "76065", "21012", "21002", "76000"),
+    Latitude = c("-35.09", "-33.97", "-34.80", "-35.14",  "-33.86", "-34.14", "-34.85"),
+    Longitude = c("139.90", "136.25", "139.85", "142.02", "138.01", "138.42", "142.78"),
+    State = c("SA", "SA", "SA", "VIC","SA", "SA", "VIC")
+    )
+
+selectInput(inputId="site_number", 
+            label = "Select site number:",
+              choices = (c("25006", "18113", "25003", "76065", "21012", "21002", "76000")), 
+            selected = "25006")
+
+path <- "H:/Output-2/Analysis/Scripts/Jackie/Downloaded_files/Neater_file_"
+#df_neat2 <- read.csv(paste0(path, input$site_number,".csv"))
+
+renderTable({
+  list_of_sites %>%  filter( Number ==input$site_number)
+})
+                    
+``` 
+
+
+## I need Reactives and Observers
+
+https://shiny.posit.co/r/getstarted/build-an-app/reactivity-essentials/reactives-observers.html
+```{r eruptions, echo=FALSE}
+
+
+
+
+
+inputPanel(
+  selectInput("n_breaks", label = "Number of bins:",
+              choices = c(10, 20, 35, 50), selected = 20),
+  
+  sliderInput("bw_adjust", label = "Bandwidth adjustment:",
+              min = 0.2, max = 2, value = 1, step = 0.2)
+)
+
+renderPlot({
+  hist(faithful$eruptions, probability = TRUE, breaks = as.numeric(input$n_breaks),
+       xlab = "Duration (minutes)", main = "Geyser eruption duration")
+  
+  dens <- density(faithful$eruptions, adjust = input$bw_adjust)
+  lines(dens, col = "blue")
+})
+```
+
+## Embedded Application
+
+It's also possible to embed an entire Shiny application within an R Markdown document using the `shinyAppDir` function. This example embeds a Shiny application located in another directory:
+
+```{r tabsets, echo=FALSE}
+shinyAppDir(
+  system.file("examples/06_tabsets", package = "shiny"),
+  options = list(
+    width = "100%", height = 550
+  )
+)
+```
+
+Note the use of the `height` parameter to determine how much vertical space the embedded application should occupy.
+
+You can also use the `shinyApp` function to define an application inline rather then in an external directory.
+
+In all of R code chunks above the `echo = FALSE` attribute is used. This is to prevent the R code within the chunk from rendering in the document alongside the Shiny components.
+
+
+
