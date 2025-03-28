@@ -5,7 +5,7 @@
 #https://www.dataquest.io/blog/r-api-tutorial/
 #install.packages(c("httr2"))
 library(httr2)
-
+library(tidyverse)
 
 ### Try APISM format
 
@@ -13,7 +13,7 @@ api_url_info= "https://www.longpaddock.qld.gov.au/cgi-bin/silo/"
 type_info= "PatchedPointDataset.php?"
 station_ID_info = "40004"
 start_info="20160101"
-finish_info="20160131"
+finish_info="20160102"
 format_info = "apsim"
 username_info = "jackie.ouzman@csiro.au"
 
@@ -25,10 +25,40 @@ APSIM_URL <- paste0(
   "format=", format_info , "&",
   "username=",username_info)
 APSIM_URL
-APSIM_format <- GET(APSIM_URL)
+#APSIM_format <- GET(APSIM_URL)
 
+NWS_base_url <- 'https://api.weather.gov'
+
+
+
+APSIM_format <- request(APSIM_URL) |> 
+  #req_url_path_append() |> 
+  req_perform()
 APSIM_format
-tail(APSIM_format)
+
+
+
+APSIM_format |> 
+  #resp_body_string() |> 
+  resp_body_raw() |> # Extract body from response
+  print()
+
+# Return object contains 7 lists APSIM_format
+APSIM_format[1] #"GET" (method)
+URL_USED <- APSIM_format[[2]]
+URL_USED
+
+APSIM_format[[3]] #don't need this status code
+Headers <- APSIM_format[[4]] 
+Date_download <- Headers[[5]]
+Date_download
+
+Body <- APSIM_format[5] 
+Body1 <- APSIM_format[["body"]]
+raw <- Body[[1]]
+raw <- as.data.frame(raw)
+
+
 
 
 ################################################################################
