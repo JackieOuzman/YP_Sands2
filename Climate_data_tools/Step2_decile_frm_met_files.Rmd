@@ -95,9 +95,9 @@ reactive_df_site_selection <- reactive({
       TRUE ~ "summer"))
 
       df <- df %>% select(-start_end_GS_date)
+      
 
-  
-  
+
   })
 
 
@@ -146,38 +146,53 @@ renderText({
 
 
 
-#### Assign growing sesaon period
-
-```{r assign GS, echo=FALSE}
-
-reactive_GS_Defined <- reactive({
-  paste0(
-    Day_start_GS_rainfall(),
-    "/",
-    Month_start_GS_rainfall(),
-    " to ",
-    Day_end_GS_rainfall(),
-    "/",
-    Month_end_GS_rainfall()
-  )
-})
-
-# renderPrint({
-#     print(names(reactive_df_site_selection()))
-#   })
-
-# 3.Create season clm per day as GS or summer ---------------------------------------------
-
-
-#
-
-
-```
 
 
 
+## Plot
 
 ```{r ummm, echo=FALSE}
+# renderPrint({
+#     print(head(
+#       reactive_df_site_selection() %>% 
+#                  group_by(year, season) %>%
+#                  summarise(sum_rain_season = sum(Rain, na.rm = TRUE)))) 
+#       
+#      
+#   })
+
+
+renderPlot({
+  reactive_df_site_selection() %>%
+    group_by(year, season) %>%
+    summarise(sum_rain_season = sum(Rain, na.rm = TRUE)) %>%
+    #summary_df <- ungroup(summary_df) %>%
+    
+    ggplot(aes(x = year, y = sum_rain_season, fill = season)) +
+    geom_bar(stat = "identity") +
+    labs(
+      title = "Sum of rain per year",
+      subtitle = paste0(
+        "Station name: ",
+        distinct(reactive_df_site_selection(), Name)
+      ),
+      
+       caption = paste0("Years included : ", 
+                        year(min(reactive_df_site_selection()$Date)) , 
+                        " to ", 
+                        year(max(reactive_df_site_selection()$Date)), 
+                           ". GS defined as: ", 
+                        input$Day_start_GS_rainfall,"/",
+                        input$Month_start_GS_rainfall, " to ",
+                        input$Day_end_GS_rainfall, "/",
+                        input$Month_end_GS_rainfall),
+      
+      y = "sum of rain")
+})
+  
+
+
+
 
 
 ```
