@@ -83,80 +83,6 @@ renderText({
 
 ### use site selection to build a file path
 
-File path and then append the site selected and print to document
-"H:/Output-2/Analysis/Scripts/Jackie/Downloaded_files/Neater_file_"
-
-
-I have white space in this example and I can't get rid of it!!
-
-```{r sites_selction_reactive_file_path1, echo=FALSE}
-## add reactive bit same as before but now we add a step to make the selection reactive - so it can be used in other function
-
-reactive_site_selection <- reactive({
-     input$site_number 
-  })
-
-
-file_path <-file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Downloaded_files")
-
-renderText({
-    paste(file_path,"Neater_file_", 
-          as.character(str_trim(reactive_site_selection())), ".csv") 
-          #str_trim(reactive_site_selection()), ".csv") 
-  })
-
-
-
-
-```
-### use downlaod handler 
-
-Umm this doesnt do what I expected!
-File path and then append the site selected and print to document
-"H:/Output-2/Analysis/Scripts/Jackie/Downloaded_files/Neater_file_"
-
-
-```{r sites_selction_reactive_file_path2, echo=FALSE}
-## add reactive bit same as before but now we add a step to make the selection reactive - so it can be used in other function
-
-reactive_site_selection <- reactive({
-     input$site_number 
-  })
-
-#downloadButton("downlaodData", "Download")
-
-downloadHandler(
-  filename= function(){
-    paste("H:/Output-2/Analysis/Scripts/Jackie/Downloaded_files/Neater_file_", reactive_site_selection(),
-          ".csv", sep = "")
-    },
-  content = function(file){
-        write.csv(data, file)
-  }
-)
-
-```
-
-
-## what about using a list of file?
-
-```{r list_of_file1, echo=FALSE}
-
-file_path <-file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Downloaded_files")
-
-# reactive_list_files <- list.files(path = file_path, 
-#                          #pattern = ".csv",
-#                          pattern = reactive_site_selection())
-
-renderText({
-    paste("files", list.files(path = file_path, 
-                              pattern = reactive_site_selection()), recursive = TRUE)
-  })
-
-```
-
-
-## Another idea??
 
 ```{r sites_selction_reactive_version2, echo=FALSE}
 ## add reactive bit same as before but now we add a step to make the selection reactive - so it can be used in other function
@@ -174,6 +100,29 @@ renderText({
     paste("Path for site selected as reactive", reactive_site_selection_path()) ## this is the reactive call reactive()
   })
 
+```
 
+### Display the top rows for the download the file for site selected
+
+```{r sites_selction_download, echo=FALSE}
+
+
+
+
+reactive_df_site_selection <- reactive({
+  read.csv(
+  paste0(file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Downloaded_files"), 
+         "/Neater_file_",
+         input$site_number, 
+         ".csv") )
+  })
+
+# renderText({
+#     print(reactive_df_site_selection())
+#   })
+
+renderPrint({
+    print(head(reactive_df_site_selection()))
+  })
 
 ```
