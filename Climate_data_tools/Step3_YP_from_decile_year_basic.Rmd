@@ -1,0 +1,41 @@
+---
+title: "Step 3 Yield potential from decile year"
+author: "Jackie"
+date: "2025-03-31"
+output: html_document
+---
+
+```{r load_libary, include=FALSE}
+library(ggplot2)
+library(readxl)
+library(tidyverse)
+library(lubridate)
+library(data.table)
+library(stringr)
+```
+Choose what site you want to create yield potential for.
+
+
+```{r list of files in directory}
+  list_of_file <- list.files(
+    (file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Decile_tables"), pattern = "GS_decile_table.csv")
+  
+ 
+```
+
+```{r sites_selction_download file}
+  df <- read.csv(paste0(file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Decile_tables"), 
+         "/GS_decile_table_",
+         input$site_number, 
+         ".csv")) 
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
