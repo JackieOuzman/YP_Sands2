@@ -1,0 +1,183 @@
+---
+title: "Step 2 creating a decile table and assigning decile years"
+author: "Jackie"
+date: "2025-03-28"
+output: html_document
+runtime: shiny
+---
+
+```{r load_libary, include=FALSE}
+library(ggplot2)
+library(readxl)
+library(tidyverse)
+library(lubridate)
+library(data.table)
+library(stringr)
+library(shiny)
+```
+
+## How to defined the start and end of growing season
+
+```{r define start of GS, echo=FALSE}
+
+
+numericInput(inputId="Day_start_GS_rainfall",
+             label = "Day of the month that growing season rainfall starts:",
+             value=1, min = 1, max = 31, step = 1)
+numericInput(inputId="Month_start_GS_rainfall",
+             label = "Month that  growing season rainfall starts:",
+             value=4, min = 1, max = 12, step = 1)
+
+
+```
+
+
+```{r define end of GS, echo=FALSE}
+
+
+numericInput(inputId="Day_end_GS_rainfall",
+             label = "Day of the month that growing season rainfall ends:",
+             value=15, min = 1, max = 31, step = 1)
+numericInput(inputId="Month_end_GS_rainfall",
+             label = "Month thatgrowing season rainfall ends:",
+             value=10, min = 1, max = 12, step = 1)
+
+```
+
+
+
+```{r sites_selction_simple_version, echo=FALSE}
+# creating a data frame
+list_of_sites <- data.frame(
+    Name = c("Karoonda", "Wharminda", "Copeville", "Walpeup" , "Bute", "Balaklava", "Annuello"), ### add more here when you have the info
+    Number = c("25006", "18113", "25003", "76065", "21012", "21002", "76000"),
+    Latitude = c("-35.09", "-33.97", "-34.80", "-35.14",  "-33.86", "-34.14", "-34.85"),
+    Longitude = c("139.90", "136.25", "139.85", "142.02", "138.01", "138.42", "142.78"),
+    State = c("SA", "SA", "SA", "VIC","SA", "SA", "VIC")
+    )
+
+selectInput(inputId="site_number", 
+            label = "Select site number:",
+              choices = (c("25006", "18113", "25003", "76065", "21012", "21002", "76000")), 
+            selected = "25006")
+
+
+
+```
+
+
+
+
+```{r sites_selction_download, echo=FALSE}
+
+
+### Display the top rows for the download the file for site selected
+
+reactive_df_site_selection <- reactive({
+      df <- read.csv(paste0(file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Downloaded_files"), 
+         "/Neater_file_",
+         input$site_number, 
+         ".csv")) 
+     
+      ## add a clm with two dates marked as start and end
+      df <- df %>% mutate(
+        start_end_GS_date = case_when(
+          month ==input$Month_start_GS_rainfall & day_of_month == input$Day_start_GS_rainfall ~ "start_gs",
+          month ==input$Month_end_GS_rainfall & day_of_month == input$Day_end_GS_rainfall ~ "end_gs",
+      TRUE ~ NA))
+      
+      ### fill the blanks
+
+      df <- df %>% fill(start_end_GS_date) %>%
+      mutate(
+      season = case_when(
+      start_end_GS_date == "start_gs" ~ "gs",
+      TRUE ~ "summer"))
+
+      df <- df %>% select(-start_end_GS_date)
+
+  
+  
+  })
+
+
+renderPrint({
+    print(names(reactive_df_site_selection()))
+  })
+renderPrint({
+    print(str(reactive_df_site_selection()))
+  })
+
+```
+
+#### Site name of file.
+```{r sites_selction_reactive_version1, echo=FALSE}
+## add reactive bit same as before but now we add a step to make the selection reactive - so it can be used in other function
+
+
+# File site number and name
+renderText({
+    paste("You have selected site number", input$site_number,## this is the reactive call reactive()
+          ".Which is ",
+          distinct(reactive_df_site_selection(), Name)# get the name of the site user selected
+
+          )
+  })
+
+```
+
+#### Date range of file.
+```{r sites_selction_reactive_version2, echo=FALSE}
+## add reactive bit same as before but now we add a step to make the selection reactive - so it can be used in other function
+
+
+
+#File start date and end date
+renderText({
+    paste("Start date in file is: ",
+          min(reactive_df_site_selection()$Date),
+           ". End date in file is: ",
+          max(reactive_df_site_selection()$Date)
+          )
+  })
+
+```
+
+
+
+
+#### Assign growing sesaon period
+
+```{r assign GS, echo=FALSE}
+
+reactive_GS_Defined <- reactive({
+  paste0(
+    Day_start_GS_rainfall(),
+    "/",
+    Month_start_GS_rainfall(),
+    " to ",
+    Day_end_GS_rainfall(),
+    "/",
+    Month_end_GS_rainfall()
+  )
+})
+
+# renderPrint({
+#     print(names(reactive_df_site_selection()))
+#   })
+
+# 3.Create season clm per day as GS or summer ---------------------------------------------
+
+
+#
+
+
+```
+
+
+
+
+```{r ummm, echo=FALSE}
+
+
+```
