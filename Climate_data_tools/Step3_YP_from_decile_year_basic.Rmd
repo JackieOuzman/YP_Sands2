@@ -12,30 +12,62 @@ library(tidyverse)
 library(lubridate)
 library(data.table)
 library(stringr)
+library(DT)
 ```
-Choose what site you want to create yield potential for.
+
+## Choose what site you want to create yield potential for.
 
 
-```{r list of files in directory}
-  list_of_file <- list.files(
-    (file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Decile_tables"), pattern = "GS_decile_table.csv")
-  
+```{r list of sites, echo=FALSE}
+list_of_sites <- data.frame(
+    Name = c("Karoonda", "Wharminda", "Copeville", "Walpeup" , "Bute", "Balaklava", "Annuello"), ### add more here when you have the info
+    Number = c("25006", "18113", "25003", "76065", "21012", "21002", "76000"),
+    Latitude = c("-35.09", "-33.97", "-34.80", "-35.14",  "-33.86", "-34.14", "-34.85"),
+    Longitude = c("139.90", "136.25", "139.85", "142.02", "138.01", "138.42", "142.78"),
+    State = c("SA", "SA", "SA", "VIC","SA", "SA", "VIC")
+    )
+
+DT::datatable(list_of_sites)
+
+
  
 ```
 
-```{r sites_selction_download file}
-  df <- read.csv(paste0(file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Decile_tables"), 
+## List of historical decile tables created in step 2
+* Looking in this folder.
+* If it is in another location change the bellow code chuck.(file_path_input_data)
+* "//fs1-cbr.nexus.csiro.au/{af-sandysoils-ii}/work/Output-2/Analysis/Scripts/Jackie/Decile_tables"
+
+```{r list of sites with decile tables, echo=FALSE}
+
+ file_path_input_data<-file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Decile_tables")
+
+list_of_file <- list.files(path = file_path_input_data, pattern = ".csv")
+list_of_file <- as.data.frame(list_of_file)
+DT::datatable(list_of_file)
+ 
+```
+## Select the site number
+* create a new variable in the below code chuck that will be used for the analysis
+* Shiny application would be nice but then I have problem saving the output.
+
+```{r sites_selction, echo=FALSE}
+ site_selected <- "25006"
+print(site_selected)
+```
+
+## Download the file 
+```{r sites_selction_download file, echo=FALSE, warning=FALSE}
+  df <- read.csv(
+    paste0(
+    file_path_input_data,
          "/GS_decile_table_",
-         input$site_number, 
-         ".csv")) 
+         site_selected, 
+         ".csv") )
+df <- df %>% mutate(across(where(is.numeric), round, 2))
+
+DT::datatable(df)
+
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
