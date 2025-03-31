@@ -13,7 +13,7 @@ library(tidyverse)
 library(lubridate)
 library(data.table)
 library(stringr)
-
+library(shiny)
 ```
 
 This R Markdown document is made interactive using Shiny. Unlike the more traditional workflow of creating static reports, you can now create documents that allow your readers to change the assumptions underlying your analysis and see the results immediately. 
@@ -24,7 +24,23 @@ To learn more, see [Interactive Documents](http://rmarkdown.rstudio.com/authorin
 
 You can embed Shiny inputs and outputs in your document. Outputs are automatically updated whenever inputs change.  This demonstrates how a standard R plot can be made interactive by wrapping it in the Shiny `renderPlot` function. The `selectInput` and `sliderInput` functions create the input widgets used to drive the plot.
 
-```{r sites_selction, echo=FALSE}
+
+# Select the sites
+
+Simple example of how to use this shiny function to print choice to the screen,
+2 ways to do this:
+* Without reactive step - easy
+* With reactive so that the extra step can be used in other function in the document.
+
+Just need to remember to make a reactive step first and the call the reactive function ()
+
+For more information on reactive function see:
+
+https://shiny.posit.co/r/getstarted/build-an-app/reactivity-essentials/reactives-observers.html
+
+### Simple example of site selection
+
+```{r sites_selction_simple_version, echo=FALSE}
 # creating a data frame
 list_of_sites <- data.frame(
     Name = c("Karoonda", "Wharminda", "Copeville", "Walpeup" , "Bute", "Balaklava", "Annuello"), ### add more here when you have the info
@@ -39,60 +55,125 @@ selectInput(inputId="site_number",
               choices = (c("25006", "18113", "25003", "76065", "21012", "21002", "76000")), 
             selected = "25006")
 
-path <- "H:/Output-2/Analysis/Scripts/Jackie/Downloaded_files/Neater_file_"
-#df_neat2 <- read.csv(paste0(path, input$site_number,".csv"))
+## how it works with out reactive ie the user selects the site and then we print it out
 
-renderTable({
-  list_of_sites %>%  filter( Number ==input$site_number)
-})
-                    
-``` 
+renderText({
+    paste("You have selected", input$site_number)
+  })
 
-
-## I need Reactives and Observers
-
-https://shiny.posit.co/r/getstarted/build-an-app/reactivity-essentials/reactives-observers.html
-```{r eruptions, echo=FALSE}
-
-
-
-
-
-inputPanel(
-  selectInput("n_breaks", label = "Number of bins:",
-              choices = c(10, 20, 35, 50), selected = 20),
-  
-  sliderInput("bw_adjust", label = "Bandwidth adjustment:",
-              min = 0.2, max = 2, value = 1, step = 0.2)
-)
-
-renderPlot({
-  hist(faithful$eruptions, probability = TRUE, breaks = as.numeric(input$n_breaks),
-       xlab = "Duration (minutes)", main = "Geyser eruption duration")
-  
-  dens <- density(faithful$eruptions, adjust = input$bw_adjust)
-  lines(dens, col = "blue")
-})
 ```
 
-## Embedded Application
+### Reactive example of site selection
 
-It's also possible to embed an entire Shiny application within an R Markdown document using the `shinyAppDir` function. This example embeds a Shiny application located in another directory:
+```{r sites_selction_reactive_version, echo=FALSE}
+## add reactive bit same as before but now we add a step to make the selection reactive - so it can be used in other function
 
-```{r tabsets, echo=FALSE}
-shinyAppDir(
-  system.file("examples/06_tabsets", package = "shiny"),
-  options = list(
-    width = "100%", height = 550
-  )
-)
+reactive_site_selection <- reactive({
+     input$site_number 
+  })
+
+renderText({
+    paste("You have selected as reactive", reactive_site_selection()) ## this is the reactive call reactive()
+  })
+
+
+
 ```
 
-Note the use of the `height` parameter to determine how much vertical space the embedded application should occupy.
 
-You can also use the `shinyApp` function to define an application inline rather then in an external directory.
+### use site selection to build a file path
 
-In all of R code chunks above the `echo = FALSE` attribute is used. This is to prevent the R code within the chunk from rendering in the document alongside the Shiny components.
+File path and then append the site selected and print to document
+"H:/Output-2/Analysis/Scripts/Jackie/Downloaded_files/Neater_file_"
+
+
+I have white space in this example and I can't get rid of it!!
+
+```{r sites_selction_reactive_file_path1, echo=FALSE}
+## add reactive bit same as before but now we add a step to make the selection reactive - so it can be used in other function
+
+reactive_site_selection <- reactive({
+     input$site_number 
+  })
+
+
+file_path <-file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Downloaded_files")
+
+renderText({
+    paste(file_path,"Neater_file_", 
+          as.character(str_trim(reactive_site_selection())), ".csv") 
+          #str_trim(reactive_site_selection()), ".csv") 
+  })
 
 
 
+
+```
+### use downlaod handler 
+
+Umm this doesnt do what I expected!
+File path and then append the site selected and print to document
+"H:/Output-2/Analysis/Scripts/Jackie/Downloaded_files/Neater_file_"
+
+
+```{r sites_selction_reactive_file_path2, echo=FALSE}
+## add reactive bit same as before but now we add a step to make the selection reactive - so it can be used in other function
+
+reactive_site_selection <- reactive({
+     input$site_number 
+  })
+
+#downloadButton("downlaodData", "Download")
+
+downloadHandler(
+  filename= function(){
+    paste("H:/Output-2/Analysis/Scripts/Jackie/Downloaded_files/Neater_file_", reactive_site_selection(),
+          ".csv", sep = "")
+    },
+  content = function(file){
+        write.csv(data, file)
+  }
+)
+
+```
+
+
+## what about using a list of file?
+
+```{r list_of_file1, echo=FALSE}
+
+file_path <-file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Downloaded_files")
+
+# reactive_list_files <- list.files(path = file_path, 
+#                          #pattern = ".csv",
+#                          pattern = reactive_site_selection())
+
+renderText({
+    paste("files", list.files(path = file_path, 
+                              pattern = reactive_site_selection()), recursive = TRUE)
+  })
+
+```
+
+
+## Another idea??
+
+```{r sites_selction_reactive_version2, echo=FALSE}
+## add reactive bit same as before but now we add a step to make the selection reactive - so it can be used in other function
+
+file_path <-file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Downloaded_files")
+
+reactive_site_selection_path <- reactive({
+  paste0(file_path, 
+         "/Neater_file_",
+         input$site_number, 
+         ".csv") 
+  })
+
+renderText({
+    paste("Path for site selected as reactive", reactive_site_selection_path()) ## this is the reactive call reactive()
+  })
+
+
+
+```
