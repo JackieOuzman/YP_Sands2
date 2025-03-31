@@ -1,5 +1,5 @@
 ---
-title: "Step 2 creating a decile table and assigning decile years"
+title: "Step 3 Yield potential from decile year"
 author: "Jackie"
 date: "2025-03-28"
 output: html_document
@@ -16,33 +16,7 @@ library(stringr)
 library(shiny)
 ```
 
-## How to defined the start and end of growing season
 
-```{r define start of GS, echo=FALSE}
-
-
-numericInput(inputId="Day_start_GS_rainfall",
-             label = "Day of the month that growing season rainfall starts:",
-             value=1, min = 1, max = 31, step = 1)
-numericInput(inputId="Month_start_GS_rainfall",
-             label = "Month that  growing season rainfall starts:",
-             value=4, min = 1, max = 12, step = 1)
-
-
-```
-
-
-```{r define end of GS, echo=FALSE}
-
-
-numericInput(inputId="Day_end_GS_rainfall",
-             label = "Day of the month that growing season rainfall ends:",
-             value=15, min = 1, max = 31, step = 1)
-numericInput(inputId="Month_end_GS_rainfall",
-             label = "Month thatgrowing season rainfall ends:",
-             value=10, min = 1, max = 12, step = 1)
-
-```
 
 
 
@@ -68,80 +42,89 @@ selectInput(inputId="site_number",
 
 
 
-```{r sites_selction_download, echo=FALSE}
+```{r reactive_df_site_selection_GS_decile, echo=FALSE}
 
 
 ### Display the top rows for the download the file for site selected
 
-reactive_df_site_selection <- reactive({
-      df <- read.csv(paste0(file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Downloaded_files"), 
-         "/Neater_file_",
+reactive_df_site_selection_GS_decile <- reactive({
+      df <- read.csv(paste0(file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Decile_tables"), 
+         "/GS_decile_table_",
          input$site_number, 
          ".csv")) 
-     
-      ## add a clm with two dates marked as start and end
-      df <- df %>% mutate(
-        start_end_GS_date = case_when(
-          month ==input$Month_start_GS_rainfall & day_of_month == input$Day_start_GS_rainfall ~ "start_gs",
-          month ==input$Month_end_GS_rainfall & day_of_month == input$Day_end_GS_rainfall ~ "end_gs",
-      TRUE ~ NA))
-      
-      ### fill the blanks
-
-      df <- df %>% fill(start_end_GS_date) %>%
-      mutate(
-      season = case_when(
-      start_end_GS_date == "start_gs" ~ "gs",
-      TRUE ~ "summer"))
-
-      df <- df %>% select(-start_end_GS_date)
-      
-### can I add the summary here?
-
-  })
+       })
 
 
-# renderPrint({
-#     print(names(reactive_df_site_selection()))
-#   })
-# renderPrint({
-#     print(str(reactive_df_site_selection()))
-#   })
 
-```
-
-#### Site name of file.
-```{r sites_selction_reactive_version1, echo=FALSE}
-## add reactive bit same as before but now we add a step to make the selection reactive - so it can be used in other function
-
-
-# File site number and name
-renderText({
-    paste("You have selected site number", input$site_number,## this is the reactive call reactive()
-          ".Which is ",
-          distinct(reactive_df_site_selection(), Name)# get the name of the site user selected
-
-          )
+renderPrint({
+    print(str(reactive_df_site_selection_GS_decile()))
   })
 
 ```
 
-#### Date range of file.
-```{r sites_selction_reactive_version2, echo=FALSE}
-## add reactive bit same as before but now we add a step to make the selection reactive - so it can be used in other function
+Summer start water Baseline
+
+```{r reactive_D5_Baseline_Est_Start_water, echo=FALSE}
+
+################################################################################
+reactive_D5_Baseline_Est_Start_water <- reactive({
+      D5_Baseline_Est_Start_water <- read.csv(paste0(file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Decile_tables"),
+         "/summer_decile_table_",
+         input$site_number,
+         ".csv"))
+
+      D5_Baseline_Est_Start_water <- D5_Baseline_Est_Start_water %>%
+      mutate(Baseline_Estimated_Starting_water = Summer_decile_max_rain * 0.25, # Estimated Starting water = (25% of Summer Rainfall)
+         Frontier_Estimated_Starting_water  = Summer_decile_max_rain * 0.30) # Estimated Starting water = (30% of Summer Rainfall)
+
+      D5_Baseline_Est_Start_water <- D5_Baseline_Est_Start_water %>%
+      filter(Summer_deciles_names =="decile_5" ) %>%
+      select(Baseline_Estimated_Starting_water)
+
+      D5_Baseline_Est_Start_water <-   D5_Baseline_Est_Start_water$Baseline_Estimated_Starting_water
+      D5_Baseline_Est_Start_water
+
+       })
 
 
-
-#File start date and end date
-renderText({
-    paste("Start date in file is: ",
-          min(reactive_df_site_selection()$Date),
-           ". End date in file is: ",
-          max(reactive_df_site_selection()$Date)
-          )
+renderPrint({
+    print(reactive_D5_Baseline_Est_Start_water())
   })
 
 ```
+
+Summer start water Frontier
+
+```{r reactive_D5_front_Est_Start_water, echo=FALSE}
+
+################################################################################
+reactive_D5_Frontier_Est_Start_water <- reactive({
+      D5_Frontier_Est_Start_water <- read.csv(paste0(file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Decile_tables"),
+         "/summer_decile_table_",
+         input$site_number,
+         ".csv"))
+
+      D5_Frontier_Est_Start_water <- D5_Frontier_Est_Start_water %>% 
+       filter(Summer_deciles_names =="decile_5" ) %>% 
+      select(Frontier_Estimated_Starting_water)
+
+      D5_Frontier_Est_Start_water <- D5_Frontier_Est_Start_water$Frontier_Estimated_Starting_water
+     D5_Frontier_Est_Start_water
+
+       })
+
+
+renderPrint({
+    print(reactive_D5_Frontier_Est_Start_water())
+  })
+
+```
+
+
+
+
+
+
 
 
 
@@ -151,7 +134,7 @@ renderText({
 
 ## Plot rain for each season type
 
-```{r plot rain by season type, echo=FALSE}
+```{r plot rain by season type, eval=FALSE, include=FALSE}
 
 
 renderPlot({
@@ -186,7 +169,7 @@ renderPlot({
 
 ## GS decile table 
 
-```{r decile table GS, echo=FALSE}
+```{r decile table GS, eval=FALSE, include=FALSE}
 
 DT::renderDT({
 
@@ -237,7 +220,7 @@ GS_decile_table_df
 
 ## Summer decile table 
 
-```{r decile table Summer, echo=FALSE}
+```{r decile table Summer, eval=FALSE, include=FALSE}
 
 DT::renderDT({
 
