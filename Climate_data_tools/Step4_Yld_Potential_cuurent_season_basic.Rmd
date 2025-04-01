@@ -124,24 +124,33 @@ FIX THESE CALS
 ## Calulate a number of variables:
 (and appending to the GS decile table)
 
-* Add the summer rainfall for decile 5
+* summer_rain_decile5 = Add the summer rainfall for decile 5
 
 
 * **Baseline**
-* Add Baseline_Est_Start_water (for decile 5) 25% of summer rainfall (sometimes called 'Estimated PAW1 April (mm)')
-* Estimated Evaporation baseline = 40% of GS rainfall
-* Yield Potential baseline = ((decile rainfall + Estimated Starting water) - Estimated Evaporation) * 20
-* Estimated yield potential baseline = 80% of Yield potential 
-
+* 1. Baseline_Est_Start_water (for decile 5) = 25% of summer rainfall 
+* (sometimes called 'Estimated PAW1 April (mm)') *from above code chunk*
+* 2. Rainfall_to_date = amount of rainfall from 1/4 to defined date *this needs to be calculated* 
+* 3. Rainfall_to_maturity = *not sure what this is, perhaps its the amount of rainfall in GS - rainfall to defined date*
+* 4. Baseline_Estimated_crop_water_use (mm) = `Baseline_Est_Start_water` + `Rainfall_to_date` + `Rainfall_to_maturity`
+* 5. Baseline_Evaporation_on_term = `Baseline_Estimated_crop_water_use` * 0.267 + 11.7
+* 6. Baseline_TE_term = 21
+* 7. Potential Yield (Baseline_PY) = ((`Baseline_Estimated_crop_water_use` - `Baseline_Evaporation_on_term`)* `Baseline_TE_term`)/1000
+* 8. Yield baseline = 80% * `Baseline_PY` 
 
 * **Frontier**
-* Add Frontier_Est_Start_water (for decile 5) 30% of summer rainfall
-* Estimated Evaporation Frontier = using a regression equation.  0.18 * GS rainfall + 15.
-* Yield Potential Frontier = ((decile rainfall + Estimated Starting water) - Estimated Evaporation) * 26
-* Estimated yield potential Frontier = 80% of Yield potential 
 
-
-
+* 1. Front_Est_Start_water (for decile 5) = 30% of summer rainfall OR 25% of summer rainfall + 6.
+* (sometimes called 'Estimated PAW1 April (mm)') 
+* *I have used the above code chunk, 30% of summer rainfall*
+* *In the spreadsheet this is calculated 25% of summer rainfall + 6*
+* 2. Rainfall_to_date = amount of rainfall from 1/4 to defined date *this needs to be calculated same as in baseline* 
+* 3. Rainfall_to_maturity = *not sure what this is, perhaps its the amount of rainfall in GS - rainfall to defined date*
+* 4. Front_Estimated_crop_water_use (mm) = `Front_Est_Start_water` + `Rainfall_to_date` + `Rainfall_to_maturity`
+* 5. Front_Evaporation_on_term = `Front_Estimated_crop_water_use` * 0.18 + 15
+* 6. Front_TE_term = 26
+* 7. Potential Yield (Front_PY) = ((`Front_Estimated_crop_water_use` - `Front_Evaporation_on_term`)* `Front_TE_term`)/1000
+* 8. Yield Front = 80% * `Front_PY` 
 
 
 ```{r append cals Baseline and Frontier, echo=FALSE}
