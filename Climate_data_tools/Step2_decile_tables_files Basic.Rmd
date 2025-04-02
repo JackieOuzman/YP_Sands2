@@ -167,7 +167,7 @@ plot1
 
 ## GS decile table 
 
-```{r decile table GS, echo=FALSE}
+```{r decile table GS, echo=FALSE, message=FALSE, warning=FALSE}
 
 
 
@@ -208,4 +208,172 @@ GS_decile_table_df <- GS_decile_table_df %>% mutate(across(where(is.numeric), ro
 
 DT::datatable(GS_decile_table_df)
 
+```
+
+## Summer decile table 
+
+```{r decile table Summer, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+  
+  summer_rain <- df %>%
+    group_by(year, season) %>%
+    summarise(sum_rain_season = sum(Rain, na.rm = TRUE)) %>%
+    filter(season == "summer")
+  
+  ## 5b. Summer ----------------------------------------------------------------------
+#the percentiles for each year.
+
+summer_decile_max_rain <- quantile(summer_rain$sum_rain_season, c(.1, .2, .3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0))
+summer_deciles_names <- c("decile_1", "decile_2", "decile_3", "decile_4", "decile_5", "decile_6", "decile_7", "decile_8", "decile_9", "decile_10")
+
+summer_decile_table <- data.frame(summer_decile_max_rain, summer_deciles_names, row.names = NULL)
+summer_decile_table <- mutate(summer_decile_table, summer_decile_min_rain = lag(summer_decile_max_rain+0.1))
+
+
+#add in the min value to table
+summer_decile_table[1,3] <-  min(summer_rain$sum_rain_season)
+summer_decile_table <- summer_decile_table %>%  select (summer_deciles_names, summer_decile_min_rain, summer_decile_max_rain)
+
+
+ summer_decile_table <- summer_decile_table %>% 
+   mutate(Station_name = unique(df$Name),
+          Station_number = unique(df$Number),
+           Years_included = paste0(
+                                   year(min(df$Date)) ,  " to ", 
+                                   year(max(df$Date))),
+          GS_period =   GS_defined_as)
+          
+                         
+
+summer_decile_table_df <- as.data.frame(summer_decile_table)
+summer_decile_table_df <- summer_decile_table_df %>% mutate(across(where(is.numeric), round, 2))
+#won't save because its reactive - I cant work it out
+
+
+  
+DT::datatable(summer_decile_table_df)
+```
+
+### Assign decile to each year
+* Create a dataframe with year, summer rain, GS rain, summer decile, winter decile.
+
+```{r years rainfall sum decile, echo=FALSE, message=FALSE, warning=FALSE}
+
+gs_rain <- gs_rain %>%
+  mutate(
+    decile = case_when(
+      between(round(sum_rain_season, 1), round(GS_decile_table[1,2],1) ,round(GS_decile_table[1,3],1) ) ~ "decile_1",
+      between(round(sum_rain_season, 1), round(GS_decile_table[2,2],1) ,round(GS_decile_table[2,3],1) ) ~ "decile_2",
+      between(round(sum_rain_season, 1), round(GS_decile_table[3,2],1) ,round(GS_decile_table[3,3],1) ) ~ "decile_3",
+      between(round(sum_rain_season, 1), round(GS_decile_table[4,2],1) ,round(GS_decile_table[4,3],1) ) ~ "decile_4",
+      between(round(sum_rain_season, 1), round(GS_decile_table[5,2],1) ,round(GS_decile_table[5,3],1) ) ~ "decile_5",
+      between(round(sum_rain_season, 1), round(GS_decile_table[6,2],1) ,round(GS_decile_table[6,3],1) ) ~ "decile_6",
+      between(round(sum_rain_season, 1), round(GS_decile_table[7,2],1) ,round(GS_decile_table[7,3],1) ) ~ "decile_7",
+      between(round(sum_rain_season, 1), round(GS_decile_table[8,2],1) ,round(GS_decile_table[8,3],1) ) ~ "decile_8",
+      between(round(sum_rain_season, 1), round(GS_decile_table[9,2],1) ,round(GS_decile_table[9,3],1) ) ~ "decile_9",
+      between(round(sum_rain_season, 1), round(GS_decile_table[10,2],1) ,round(GS_decile_table[10,3],1) ) ~ "decile_10",
+      
+      TRUE                      ~ "other"
+    )
+  )
+
+
+gs_rain <- gs_rain %>% 
+  mutate(Station_name = paste0(distinct(df, Name)),
+         Station_number = paste0(distinct(df, Number)) ,
+         Years_included = paste0(year(start) ," to ",  year(end)),
+         GS_period =   GS_defined_as                     
+  )
+
+gs_rain <- gs_rain %>%  rename(gs_sum_rain = sum_rain_season,
+                               gs_decile = decile) %>%   select(- season)
+summer_rain <- summer_rain %>%
+  mutate(
+    decile = case_when(
+      between(round(sum_rain_season, 1), round(summer_decile_table[1,2],1) ,round(summer_decile_table[1,3],1) ) ~ "decile_1",
+      between(round(sum_rain_season, 1), round(summer_decile_table[2,2],1) ,round(summer_decile_table[2,3],1) ) ~ "decile_2",
+      between(round(sum_rain_season, 1), round(summer_decile_table[3,2],1) ,round(summer_decile_table[3,3],1) ) ~ "decile_3",
+      between(round(sum_rain_season, 1), round(summer_decile_table[4,2],1) ,round(summer_decile_table[4,3],1) ) ~ "decile_4",
+      between(round(sum_rain_season, 1), round(summer_decile_table[5,2],1) ,round(summer_decile_table[5,3],1) ) ~ "decile_5",
+      between(round(sum_rain_season, 1), round(summer_decile_table[6,2],1) ,round(summer_decile_table[6,3],1) ) ~ "decile_6",
+      between(round(sum_rain_season, 1), round(summer_decile_table[7,2],1) ,round(summer_decile_table[7,3],1) ) ~ "decile_7",
+      between(round(sum_rain_season, 1), round(summer_decile_table[8,2],1) ,round(summer_decile_table[8,3],1) ) ~ "decile_8",
+      between(round(sum_rain_season, 1), round(summer_decile_table[9,2],1) ,round(summer_decile_table[9,3],1) ) ~ "decile_9",
+      between(round(sum_rain_season, 1), round(summer_decile_table[10,2],1) ,round(summer_decile_table[10,3],1) ) ~ "decile_10",
+      
+      TRUE                      ~ "other"
+    )
+  )
+
+
+summer_rain <- summer_rain %>%  rename(summer_sum_rain = sum_rain_season,
+                                       summer_decile = decile) %>% 
+  select(- season)
+
+Year_with_Deciles <- left_join(gs_rain, summer_rain)
+Year_with_Deciles <- Year_with_Deciles %>% select(
+  year,
+  Station_name ,
+  Station_number,
+  gs_decile,
+  gs_sum_rain,
+  summer_decile ,
+  summer_sum_rain,
+  GS_period ,
+  Years_included )
+
+
+rm(gs_rain, summer_rain)
+
+DT::datatable(Year_with_Deciles)
+```
+
+## Save outputs 
+* Summer decile table
+* GS decile table
+* Year with decile info and rainfall info per year and season type (GS, summer)
+* Plot of rainfall sum per year and season type
+* Daily met file with site info and season type
+
+"\\fs1-cbr.nexus.csiro.au\{af-sandysoils-ii}\work\Output-2\Analysis\Scripts\Jackie\Decile_tables"
+
+
+```{r save files, echo=FALSE, message=FALSE, warning=FALSE}
+
+Files_saved <- "H:/Output-2/Analysis/Scripts/Jackie/Decile_tables/"
+#decile tables
+# GS_decile_table_df
+# summer_decile_table_df
+
+write_csv(GS_decile_table_df, 
+          file =paste0(Files_saved, "GS_decile_table_df_", site_selected, ".csv"))
+write_csv(summer_decile_table_df, 
+          file =paste0(Files_saved, "summer_decile_table_df_", site_selected, ".csv"))
+
+#Year_with_Deciles
+write_csv(Year_with_Deciles, 
+          file =paste0(Files_saved, "Year_with_Deciles_", site_selected, ".csv"))
+
+#plot
+ ggsave(plot = plot1,
+       filename = paste0(Files_saved,"plot1_sum_rain_per_yr_summer_GS", site_selected, ".png"),
+       width = 20, height = 12, units = "cm")
+
+#df (Daily met file with site info and season type)
+write_csv(df, 
+          file =paste0(Files_saved, "Daily_met_file_season types_", site_selected, ".csv"))
+
+```
+
+```{r files in directory, echo=FALSE, message=FALSE, warning=FALSE}
+Files_saved <- "H:/Output-2/Analysis/Scripts/Jackie/Decile_tables/"
+files <- list.files(path = Files_saved,full.names = TRUE, pattern = ".csv")
+
+file_info <- file.info(files)
+file_info$file_name <- rownames(file_info)
+file_info <- file_info %>%
+  dplyr::select(atime)
+#names(file_info)
+DT::datatable(file_info)
 ```
