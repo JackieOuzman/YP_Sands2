@@ -153,6 +153,8 @@ FIX THESE CALS
 * 8. Yield Front = 80% * `Front_PY` 
 
 
+**** Up to here ****
+
 ```{r append cals Baseline and Frontier, echo=FALSE}
 
 summer_rain_decile5 <- df_summer %>% 
