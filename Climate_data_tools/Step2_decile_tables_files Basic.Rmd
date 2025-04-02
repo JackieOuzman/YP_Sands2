@@ -126,6 +126,8 @@ paste("Growing season: ", GS_defined_as)
 * If you want to change it modify the below code chunk.
 
 ```{r subset date range, echo=FALSE}
+df_all_date <- df #keep this
+
 start <- "1900-01-01"
 end <- "2023-12-31"
 
@@ -334,7 +336,7 @@ DT::datatable(Year_with_Deciles)
 * GS decile table
 * Year with decile info and rainfall info per year and season type (GS, summer)
 * Plot of rainfall sum per year and season type
-* Daily met file with site info and season type
+* Daily met file with site info and season type but all date (df_all_date)
 
 "\\fs1-cbr.nexus.csiro.au\{af-sandysoils-ii}\work\Output-2\Analysis\Scripts\Jackie\Decile_tables"
 
@@ -361,7 +363,7 @@ write_csv(Year_with_Deciles,
        width = 20, height = 12, units = "cm")
 
 #df (Daily met file with site info and season type)
-write_csv(df, 
+write_csv(df_all_date, 
           file =paste0(Files_saved, "Daily_met_file_season types_", site_selected, ".csv"))
 
 ```
