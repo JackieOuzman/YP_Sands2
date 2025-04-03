@@ -15,6 +15,22 @@ library(stringr)
 library(DT)
 ```
 
+# Workflow for analysing climate data creating decile tables and forecasting yields.
+* Series of R markdown. Best to run these in order, but once you have historical yields step 2 and 3 they don’t need to be repeated to get a yield forecast.  
+**Step 1** 
+ *	Download patch point met file, tidy up and saved to directory. User to specify the site number.  
+**Step 2** 
+*	User defined site, and ‘season’.
+*	Create plot sum of rain, per year, per season for site selected
+*	Create historical files 1. Decile table for GS. 2. Decile table summer season.
+*	File for each year with sum of rain per year and season type.  
+**Step 3**
+*	User defined site creates yield potential for decile years, using baseline and frontier approach.
+*	Creates plot  
+**Step 4**
+*	User defined site creates yield forecast for decile years, using baseline and frontier approach for defined dates
+*	Creates plot  
+
 ## Choose what site you want to create yield potential for.
 
 
@@ -58,10 +74,12 @@ print(site_selected)
 
 ## Download the **Growing season** decile file 
 ```{r sites_selction_download GS file, echo=FALSE, warning=FALSE}
-  df_GS <- read.csv(
+  
+
+df_GS <- read.csv(
     paste0(
     file_path_input_data,
-         "/GS_decile_table_",
+         "/GS_decile_table_df_",
          site_selected, 
          ".csv") )
 df_GS <- df_GS %>% mutate(across(where(is.numeric), round, 2))
@@ -75,7 +93,7 @@ DT::datatable(df_GS)
   df_summer <- read.csv(
     paste0(
     file_path_input_data,
-         "/Summer_decile_table_",
+         "/Summer_decile_table_df_",
          site_selected, 
          ".csv") )
 df_summer <- df_summer %>% mutate(across(where(is.numeric), round, 2))
@@ -94,21 +112,21 @@ DT::datatable(df_summer)
 
 ## add a clm with this Estimated Starting water for all deciles
 df_summer <- df_summer %>%
-  mutate(Baseline_Estimated_Starting_water = Summer_decile_max_rain * 0.25, # Estimated Starting water = (25% of Summer Rainfall)
-         Frontier_Estimated_Starting_water  = Summer_decile_max_rain * 0.30) # Estimated Starting water = (30% of Summer Rainfall)
+  mutate(Baseline_Estimated_Starting_water = summer_decile_max_rain * 0.25, # Estimated Starting water = (25% of Summer Rainfall)
+         Frontier_Estimated_Starting_water  = summer_decile_max_rain * 0.30) # Estimated Starting water = (30% of Summer Rainfall)
 
 
 ## create 2 new variable for decile 5 Baseline Estimated Starting water and Frontier Estimated Starting water
 
 D5_Baseline_Est_Start_water <- df_summer %>% 
-  filter(Summer_deciles_names =="decile_5" ) %>% 
+  filter(summer_deciles_names =="decile_5" ) %>% 
   select(Baseline_Estimated_Starting_water)
 
 D5_Baseline_Est_Start_water <-   D5_Baseline_Est_Start_water$Baseline_Estimated_Starting_water
 
 
 D5_Frontier_Est_Start_water <- df_summer %>% 
-  filter(Summer_deciles_names =="decile_5" ) %>% 
+  filter(summer_deciles_names =="decile_5" ) %>% 
   select(Frontier_Estimated_Starting_water)
 
 D5_Frontier_Est_Start_water <- D5_Frontier_Est_Start_water$Frontier_Estimated_Starting_water

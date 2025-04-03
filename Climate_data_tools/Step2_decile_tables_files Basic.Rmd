@@ -14,6 +14,22 @@ library(data.table)
 library(stringr)
 ```
 
+# Workflow for analysing climate data creating decile tables and forecasting yields.
+* Series of R markdown. Best to run these in order, but once you have historical yields step 2 and 3 they don’t need to be repeated to get a yield forecast.  
+**Step 1** 
+ *	Download patch point met file, tidy up and saved to directory. User to specify the site number.  
+**Step 2** 
+*	User defined site, and ‘season’.
+*	Create plot sum of rain, per year, per season for site selected
+*	Create historical files 1. Decile table for GS. 2. Decile table summer season.
+*	File for each year with sum of rain per year and season type.  
+**Step 3**
+*	User defined site creates yield potential for decile years, using baseline and frontier approach.
+*	Creates plot  
+**Step 4**
+*	User defined site creates yield forecast for decile years, using baseline and frontier approach for defined dates
+*	Creates plot  
+
 ## How to defined the start and end of growing season
 * The default is 1/4 (1st April) to 15/10 (15th Oct)
 * If you want to change this modified the below code chunk.
