@@ -4,7 +4,7 @@ b_f_forecast_yld$GS_deciles_names <- factor(b_f_forecast_yld$GS_deciles_names , 
                                                        "decile_9","decile_10" ))
 b_f_forecast_yld
 df_gs
-plot1 <-b_f_forecast_yld %>%http://127.0.0.1:16783/graphics/plot_zoom_png?width=1280&height=658
+plot1 <-b_f_forecast_yld %>%
   ggplot(aes(x = defined_date , y = Yield_forecast, group=method) )+
   geom_point(aes(color=method))+
   geom_line(aes(color=method))+

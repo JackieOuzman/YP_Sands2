@@ -174,40 +174,42 @@ DT::datatable(df_summer)
 ```
 
 
-## Decile 5 Summer start water baseline and frontier
-* This is calculated from the summer decile tables for the site nominated
-* Baseline Estimated Starting water is 25% of summer rainfall
-* Frontier Estimated Starting water is 30% of summer rainfall
+
 
 ```{r D5_Starting water Baseline and Frontier, echo=FALSE}
 
-## add a clm with this Estimated Starting water for all deciles
-df_summer <- df_summer %>%
-  mutate(Baseline_Estimated_Starting_water = summer_decile_max_rain * 0.25, # Estimated Starting water = (25% of Summer Rainfall)
-         Frontier_Estimated_Starting_water  = summer_decile_max_rain * 0.30) # Estimated Starting water = (30% of Summer Rainfall)
+# ## Decile 5 Summer start water baseline and frontier
+# * This is calculated from the summer decile tables for the site nominated
+# * Baseline Estimated Starting water is 25% of summer rainfall
+# * Frontier Estimated Starting water is 30% of summer rainfall
 
-
-## create 2 new variable for decile 5 Baseline Estimated Starting water and Frontier Estimated Starting water
-
-D5_Baseline_Est_Start_water <- df_summer %>% 
-  filter(summer_deciles_names =="decile_5" ) %>% 
-  select(Baseline_Estimated_Starting_water)
-
-D5_Baseline_Est_Start_water <-   D5_Baseline_Est_Start_water$Baseline_Estimated_Starting_water
-
-
-D5_Frontier_Est_Start_water <- df_summer %>% 
-  filter(summer_deciles_names =="decile_5" ) %>% 
-  select(Frontier_Estimated_Starting_water)
-
-D5_Frontier_Est_Start_water <- D5_Frontier_Est_Start_water$Frontier_Estimated_Starting_water
-
-
-
-
-
-print(paste0("D5_Baseline_Est_Start_water = ", D5_Baseline_Est_Start_water))
-print(paste0("D5_Frontier_Est_Start_water = ", D5_Frontier_Est_Start_water)) 
+# ## add a clm with this Estimated Starting water for all deciles
+# df_summer <- df_summer %>%
+#   mutate(Baseline_Estimated_Starting_water = summer_decile_max_rain * 0.25, # Estimated Starting water = (25% of Summer Rainfall)
+#          Frontier_Estimated_Starting_water  = summer_decile_max_rain * 0.30) # Estimated Starting water = (30% of Summer Rainfall)
+# 
+# 
+# ## create 2 new variable for decile 5 Baseline Estimated Starting water and Frontier Estimated Starting water
+# 
+# D5_Baseline_Est_Start_water <- df_summer %>% 
+#   filter(summer_deciles_names =="decile_5" ) %>% 
+#   select(Baseline_Estimated_Starting_water)
+# 
+# D5_Baseline_Est_Start_water <-   D5_Baseline_Est_Start_water$Baseline_Estimated_Starting_water
+# 
+# 
+# D5_Frontier_Est_Start_water <- df_summer %>% 
+#   filter(summer_deciles_names =="decile_5" ) %>% 
+#   select(Frontier_Estimated_Starting_water)
+# 
+# D5_Frontier_Est_Start_water <- D5_Frontier_Est_Start_water$Frontier_Estimated_Starting_water
+# 
+# 
+# 
+# 
+# 
+# print(paste0("D5_Baseline_Est_Start_water = ", D5_Baseline_Est_Start_water))
+# print(paste0("D5_Frontier_Est_Start_water = ", D5_Frontier_Est_Start_water)) 
 ```
 
 ## Calulate a number of variables:
@@ -220,11 +222,10 @@ print(paste0("D5_Frontier_Est_Start_water = ", D5_Frontier_Est_Start_water))
 
 * summer_rain_decile5 = Add the summer rainfall for decile 5
 
-* 1. `D5_Baseline_Est_Start_water` (for decile 5) = 25% of summer rainfall 
-* (sometimes called 'Estimated PAW1 April (mm)') *from above code chunk*
+* 1. `PAW` (for decile 5) = 25% of summer rainfall 
 * 2. `rainfall_to_date` = amount of rainfall from 1/4 to defined date 
 * 3. `rainfall_to_end_GS` = *not sure what this is, perhaps its the amount of rainfall in GS - rainfall to defined date*
-* 4. `estimated_crop_water_use` (mm) = `D5_Baseline_Est_Start_water` + `rainfall_to_date` + `rainfall_to_end_GS`
+* 4. `estimated_crop_water_use` (mm) = `PAW` + `rainfall_to_date` 
 * 5. `Evaporation_on_term` = `estimated_crop_water_use` * 0.267 + 11.7
 * 6. `Baseline_TE_term` = 21
 * 7. `PY` (Potential Yield) = ((`estimated_crop_water_use` - `Evaporation_on_term`)* `Baseline_TE_term`)/1000
@@ -237,6 +238,7 @@ print(paste0("D5_Frontier_Est_Start_water = ", D5_Frontier_Est_Start_water))
 * Kenton please check the calculation 
 * This is a worked example for one date at the start of the GS
 * If you want to change the date modified the first line in the below code chunk
+* from "\\fs1-cbr.nexus.csiro.au\{af-sandysoils-ii}\work\Output-2\Analysis\Scripts\Jackie\rainfall and yld potentail\SSO2_CopevilleCore_FertandYieldBudget_2024_jaxs.xlsx"
 
 ```{r append cals Baseline, echo=FALSE}
 
@@ -262,8 +264,7 @@ df_gs_baseline_values <- df_gs_baseline_values %>% mutate(summer_rain_decile5 = 
 
 # Est start water
 df_gs_baseline_values <- df_gs_baseline_values %>%
-  mutate(Baseline_Est_Start_water = D5_Baseline_Est_Start_water
-  )
+  mutate(PAW = summer_rain_decile5*.25)
 
 
 ## get the rainfall to date
@@ -282,9 +283,9 @@ df_gs_baseline_values <- df_gs_baseline_values %>%
   mutate(rainfall_to_end_GS = GS_decile_max_rain - rainfall_to_date)
 
 
-#Estimated_crop_water_use = `Baseline_Est_Start_water` + `Rainfall_to_date` + `Rainfall_to_maturity`
+#Estimated_crop_water_use = `Baseline_Est_Start_water`  + `Rainfall_to_maturity`
 df_gs_baseline_values <- df_gs_baseline_values %>% 
-  mutate(estimated_crop_water_use = Baseline_Est_Start_water + rainfall_to_date  + rainfall_to_end_GS)
+  mutate(estimated_crop_water_use = PAW + rainfall_to_end_GS)
 
 
 #Baseline_Evaporation_on_term = `Baseline_Estimated_crop_water_use` * 0.267 + 11.7
@@ -322,13 +323,10 @@ df_gs_baseline_values <- df_gs_baseline_values %>% mutate(across(where(is.numeri
 * summer_rain_decile5 = Add the summer rainfall for decile 5
 
 
-* 1. `Frontier_Est_Start_water` (for decile 5) = 30% of summer rainfall OR 25% of summer rainfall + 6.
-* (sometimes called 'Estimated PAW1 April (mm)') 
-* *I have used the above code chunk, 30% of summer rainfall*
-* *In the spreadsheet this is calculated 25% of summer rainfall + 6*
-* 2. `rainfall_to_date` = amount of rainfall from 1/4 to defined date *this needs to be calculated same as in baseline* 
+* 1. `PAW` (for decile 5) = (25% of summer rainfall) + 6.
+* 2. `rainfall_to_date` = amount of rainfall from 1/4 to defined date  
 * 3. `rainfall_to_end_GS` = *not sure what this is, perhaps its the amount of rainfall in GS - rainfall to defined date*
-* 4. `estimated_crop_water_use` (mm) = `Frontier_Est_Start_water` + `rainfall_to_date` + `rainfall_to_end_GS`
+* 4. `estimated_crop_water_use` (mm) = `PAW`  + `rainfall_to_end_GS`
 * 5. `Evaporation_on_term` = `estimated_crop_water_use` * 0.18 + 15
 * 6. `Front_TE_term` = 26
 * 7. `PY` (Potential Yield Front) = ((`estimated_crop_water_use` - `Evaporation_on_term`)* `Front_TE_term`)/1000
@@ -363,8 +361,8 @@ df_gs_front_values <- df_gs_front_values %>% mutate(summer_rain_decile5 = summer
 
 # Est start water
 df_gs_front_values <- df_gs_front_values %>%
-  mutate(Frontier_Est_Start_water = D5_Frontier_Est_Start_water
-  )
+  mutate(PAW = (summer_rain_decile5 *.25)+6)
+  
 
 
 ## get the rainfall to date
@@ -384,9 +382,9 @@ df_gs_front_values <- df_gs_front_values %>%
   mutate(rainfall_to_end_GS = GS_decile_max_rain - rainfall_to_date)
 
 
-#Estimated_crop_water_use = `Baseline_Est_Start_water` + `Rainfall_to_date` + `Rainfall_to_maturity`
+#Estimated_crop_water_use = `Baseline_Est_Start_water` + `Rainfall_to_maturity`
 df_gs_front_values <- df_gs_front_values %>% 
-  mutate(estimated_crop_water_use = Frontier_Est_Start_water + rainfall_to_date  + rainfall_to_end_GS)
+  mutate(estimated_crop_water_use = PAW + rainfall_to_end_GS)
 
 
 #Baseline_Evaporation_on_term = `Baseline_Estimated_crop_water_use` * 0.18 + 15
@@ -448,8 +446,8 @@ df_gs_baseline_values <- df_gs_baseline_values %>% mutate(summer_rain_decile5 = 
 
 # Est start water
 df_gs_baseline_values <- df_gs_baseline_values %>%
-  mutate(Baseline_Est_Start_water = D5_Baseline_Est_Start_water
-  )
+  mutate(PAW = summer_rain_decile5 *.25)
+  
 
 
 ## get the rainfall to date
@@ -468,9 +466,9 @@ df_gs_baseline_values <- df_gs_baseline_values %>%
   mutate(rainfall_to_end_GS = GS_decile_max_rain - rainfall_to_date)
 
 
-#Estimated_crop_water_use = `Baseline_Est_Start_water` + `Rainfall_to_date` + `Rainfall_to_maturity`
+#Estimated_crop_water_use = `Baseline_Est_Start_water` + `Rainfall_to_maturity`
 df_gs_baseline_values <- df_gs_baseline_values %>% 
-  mutate(estimated_crop_water_use = Baseline_Est_Start_water + rainfall_to_date  + rainfall_to_end_GS)
+  mutate(estimated_crop_water_use = PAW +  rainfall_to_end_GS)
 
 
 #Baseline_Evaporation_on_term = `Baseline_Estimated_crop_water_use` * 0.267 + 11.7
@@ -550,21 +548,8 @@ for(defined_date_list in defined_date_list){
   
   # Est start water
   df_gs_front_values <- df_gs_front_values %>%
-    mutate(Frontier_Est_Start_water = D5_Frontier_Est_Start_water
-    )
-  ## get the rainfall for summer rainfall decile 5
-  summer_rain_decile5 <- df_summer %>% 
-    filter(summer_deciles_names =="decile_5" ) %>% 
-    select(summer_decile_max_rain)
-  summer_rain_decile5 <-   summer_rain_decile5$summer_decile_max_rain
-  #summer_rain_decile5
-  df_gs_front_values <- df_gs_front_values %>% mutate(summer_rain_decile5 = summer_rain_decile5)
-  
-  
-  # Est start water
-  df_gs_front_values <- df_gs_front_values %>%
-    mutate(Frontier_Est_Start_water = D5_Frontier_Est_Start_water
-    )
+    mutate(PAW = (summer_rain_decile5*0.25)+6)
+    
   
   
   ## get the rainfall to date
@@ -584,9 +569,9 @@ for(defined_date_list in defined_date_list){
     mutate(rainfall_to_end_GS = GS_decile_max_rain - rainfall_to_date)
   
   
-  #Estimated_crop_water_use = `Baseline_Est_Start_water` + `Rainfall_to_date` + `Rainfall_to_maturity`
+  #Estimated_crop_water_use = `Baseline_Est_Start_water`  + `Rainfall_to_maturity`
   df_gs_front_values <- df_gs_front_values %>% 
-    mutate(estimated_crop_water_use = Frontier_Est_Start_water + rainfall_to_date  + rainfall_to_end_GS)
+    mutate(estimated_crop_water_use = PAW +  rainfall_to_end_GS)
   
   
   #Baseline_Evaporation_on_term = `Baseline_Estimated_crop_water_use` * 0.18 + 15
@@ -655,28 +640,28 @@ DT::datatable(b_f_forecast_yld)
 ```{r pre plot work, echo=FALSE}
 
 
-# ################################################################################
-# # order the deciles to help with plotting
-# 
 b_f_forecast_yld$GS_deciles_names <- factor(b_f_forecast_yld$GS_deciles_names , ordered = TRUE,
-                                levels = c("decile_1", "decile_2", "decile_3", "decile_4",
-                                           "decile_5", "decile_6", "decile_7", "decile_8",
-                                           "decile_9","decile_10" ))
+                                            levels = c("decile_1", "decile_2", "decile_3", "decile_4",
+                                                       "decile_5", "decile_6", "decile_7", "decile_8",
+                                                       "decile_9","decile_10" ))
+
+# temp <-b_f_forecast_yld %>%
+#   filter(GS_deciles_names == "decile_5")
 
 
 plot1 <-b_f_forecast_yld %>%
-  
-
-  ggplot(aes(x = GS_deciles_names , y = Yield_forecast, group=method) )+
+  #filter(GS_deciles_names == "decile_5") %>%  
+  ggplot(aes(x = defined_date , y = Yield_forecast, group=method) )+
   geom_point(aes(color=method))+
   geom_line(aes(color=method))+
   theme_bw()+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))+
-  labs(title = "Yield_forecast",
-       subtitle = paste0("Station name: ", distinct(df_GS, Station_name ),
-                         " - ", distinct(df_GS, Station_number )),
-       caption = paste0("Years included : ", distinct(df_GS,Years_included),
-                        ". GS period:",  distinct(df_GS,GS_period)),
+  facet_wrap(.~GS_deciles_names )+
+  labs(title = "Yield forecast",
+       subtitle = paste0("Station name: ", distinct(df_gs, Station_name ),
+                         " - ", distinct(df_gs, Station_number )),
+       caption = paste0("Years included to make deciles : ", distinct(df_gs,Years_included),
+                        ". GS period:",  distinct(df_gs,GS_period)),
        y = "Yield kg/ha",
        x = "",
        colour = "" #removed the legend title
@@ -686,43 +671,24 @@ plot1
 
 ```
 
-```{r plot work, echo=FALSE}
 
-# plot1 <-df_GS_long %>% 
-#   filter(Cal_type =="Baseline Practice" | Cal_type =="New Frontier" | Cal_type == "New Frontier Long term") %>% 
-#   
-#   ggplot(aes(x = GS_deciles_names , y = value, group=Cal_type) )+
-#   geom_point(aes(color=Cal_type))+
-#   geom_line(aes(color=Cal_type))+
-#   theme_bw()+
-#   theme(axis.text.x = element_text(angle = 45, hjust = 1))+
-#   labs(title = "YP based on historical  decile years",
-#        subtitle = paste0("Station name: ", distinct(df_GS, Station_name ), 
-#                          " - ", distinct(df_GS, Station_number )),
-#        caption = paste0("Years included : ", distinct(df_GS,Years_included),
-#                         ". GS period:",  distinct(df_GS,GS_period)),
-#        y = "Yield kg/ha",
-#        x = "",
-#        colour = "" #removed the legend title
-#   )
-# plot1
-```
+
 
 # Save file
 * Saving to this folder.
 * If it is in another location change the bellow code chuck.(file_path_input_data)
-* "//fs1-cbr.nexus.csiro.au/{af-sandysoils-ii}/work/Output-2/Analysis/Scripts/Jackie/Decile_tables"
+* "//fs1-cbr.nexus.csiro.au/{af-sandysoils-ii}/work/Output-2/Analysis/Scripts/Jackie/Forecast_ylds"
 
 
 
 ```{r save files, echo=FALSE}
-# path_saved_files <- file_path_input_data<-file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Decile_tables")
-# 
-# ggsave(plot = plot1,
-#        filename = paste0(path_saved_files,"/Plot_YP based on GS decile years.png" ), 
-#        width = 20, height = 12, units = "cm")
-# 
-# 
-# write_csv(df_GS_long, 
-#           file = paste0(path_saved_files,"/GS_decile_table_withYP_cals_long.csv"))
+path_saved_files <- file_path_input_data<-file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Forecast_ylds")
+
+ggsave(plot = plot1,
+       filename = paste0(path_saved_files,"/Forecast_yld_plot_", site_selected, ".png" ),
+       width = 20, height = 12, units = "cm")
+
+
+write_csv(b_f_forecast_yld,
+          file = paste0(path_saved_files,"/Forecast_yld_",site_selected, ".csv"))
 ```
