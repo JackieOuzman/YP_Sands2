@@ -47,6 +47,24 @@ Month_end_GS_rainfall <- 10
 
 ```
 
+
+## How to defined the start and end of summer months
+* The default is 1/11 (1st Nov) to 30/03 (30th March)
+* If you want to change this modified the below code chunk.
+
+```{r define start and end of GS, echo=FALSE}
+
+
+Day_start_Summer_rainfall <- 1
+Month_start_summer_rainfall <- 11
+    
+
+Day_end_summer_rainfall <- 30
+Month_end_summer_rainfall <- 3
+      
+
+```
+
 ## Choose what site you want to create decile table for.
 
 
@@ -95,7 +113,7 @@ path <-  file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Downloaded
 
 df <- read.csv(paste0(path, "/Neater_file_", site_selected,  ".csv")) 
      
-      ## add a clm with two dates marked as start and end
+      ## add a clm with two dates marked as start and end of GS
       df <- df %>% mutate(
         start_end_GS_date = case_when(
           month == Month_start_GS_rainfall & day_of_month == Day_start_GS_rainfall ~ "start_gs",
@@ -108,9 +126,30 @@ df <- read.csv(paste0(path, "/Neater_file_", site_selected,  ".csv"))
       mutate(
       season = case_when(
       start_end_GS_date == "start_gs" ~ "gs",
-      TRUE ~ "summer"))
+      TRUE ~ "other"))
 
       df <- df %>% select(-start_end_GS_date)
+      
+      
+      ## add a clm with two dates marked as start and end of Summer
+      df <- df %>% mutate(
+        start_end_summer_date = case_when(
+          month == Month_start_summer_rainfall & day_of_month == Day_start_summer_rainfall ~ "start_summer",
+          month == Month_end_summer_rainfall & day_of_month == Day_end_summer_rainfall ~ "end_summer",
+      TRUE ~ NA))
+      
+      ### fill the blanks
+
+      df <- df %>% fill(start_end_summer_date) %>%
+      mutate(
+      season = case_when(
+      start_end_GS_date == "start_summer" ~ "summer",
+      TRUE ~ "other"))
+
+      df <- df %>% select(-start_end_summer_date)
+      
+      
+      
 ``` 
 
 #### Date range of file you have selected.
@@ -132,7 +171,11 @@ GS_defined_as <- paste0(
   Day_start_GS_rainfall, "/", Month_start_GS_rainfall,
   " to ", Day_end_GS_rainfall, "/", Month_end_GS_rainfall)
 
-paste("Growing season: ", GS_defined_as)
+summer_defined_as <- paste0(
+  Day_start_summer_rainfall, "/", Month_start_summer_rainfall,
+  " to ", Day_end_summer_rainfall, "/", Month_end_summer_rainfall)
+
+paste("summer season: ", summer_defined_as)
                 
       
 ```  

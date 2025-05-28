@@ -104,7 +104,7 @@ DT::datatable(df_summer)
 
 
 ## Decile 5 Summer start water baseline and frontier
-* This is calulated from the summer decile tables for the site nominated
+* This is calculated from the summer decile tables for the site nominated
 * Baseline Estimated Starting water is 25% of summer rainfall
 * Frontier Estimated Starting water is 30% of summer rainfall
 

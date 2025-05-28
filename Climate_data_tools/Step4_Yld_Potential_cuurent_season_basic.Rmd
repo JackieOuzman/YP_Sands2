@@ -344,7 +344,7 @@ df_gs_baseline_values <- df_gs_baseline_values %>% mutate(across(where(is.numeri
 * 2. `rainfall_to_date` = amount of rainfall from 1/4 to defined date  
 * 3. `rainfall_to_end_GS` = *not sure what this is, perhaps its the amount of rainfall in GS - rainfall to defined date*
 * 4. `estimated_crop_water_use` (mm) = `PAW`  + `rainfall_to_end_GS`
-* 5. `Evaporation_on_term` = `estimated_crop_water_use` * 0.18 + 15
+* 5. `Evaporation_on_term` = `estimated_crop_water_use` * 0.18 + 15 ** this needs changing***
 * 6. `Front_TE_term` = 26
 * 7. `PY` (Potential Yield Front) = ((`estimated_crop_water_use` - `Evaporation_on_term`)* `Front_TE_term`)/1000
 * 8. `Yield_forecast` = 80% * `PY` 
