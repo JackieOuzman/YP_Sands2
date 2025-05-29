@@ -95,7 +95,7 @@ str(daily_file)
 
 * If the daily met file won't allow you to choose so many dates (ie the dates have not happened yet for that year).
 * Make the dates the same for the subsequent defined date. 
-* The report is expecting 8 dates, but maybe you only have 2 date, so you can fill out date1 and date2 with real dates that occur in the daily met file, the rest of the dates should then become the last know dates i.e. date2.
+* The report is expecting 7 dates, but maybe you only have 2 date, so you can fill out date1 and date2 with real dates that occur in the daily met file, the rest of the dates should then become the last know dates i.e. date2.
 * You will need to **change the dates in the below code chunk** (if you don't want these).
 
 
@@ -134,7 +134,7 @@ daily_file_sum_rain4 <- daily_file4 %>% summarise(sum_rain = sum(Rain, na.rm = T
 daily_file_sum_rain5 <- daily_file5 %>% summarise(sum_rain = sum(Rain, na.rm = TRUE)) %>% mutate(startGS =start, Defined_date =defined_date5, date = "date5")
 daily_file_sum_rain6 <- daily_file6 %>% summarise(sum_rain = sum(Rain, na.rm = TRUE)) %>% mutate(startGS =start, Defined_date =defined_date6, date = "date6")
 daily_file_sum_rain7 <- daily_file7 %>% summarise(sum_rain = sum(Rain, na.rm = TRUE)) %>% mutate(startGS =start, Defined_date =defined_date7, date = "date7")
-daily_file_sum_rain8 <- daily_file8 %>% summarise(sum_rain = sum(Rain, na.rm = TRUE)) %>% mutate(startGS =start, Defined_date =defined_date8, date = "date8")
+ daily_file_sum_rain8 <- daily_file8 %>% summarise(sum_rain = sum(Rain, na.rm = TRUE)) %>% mutate(startGS =start, Defined_date =defined_date8, date = "date8")
 
 daily_file_sum_rain_all <- rbind(daily_file_sum_rain1,
                                  daily_file_sum_rain2,
@@ -143,7 +143,8 @@ daily_file_sum_rain_all <- rbind(daily_file_sum_rain1,
                                  daily_file_sum_rain5,
                                  daily_file_sum_rain6,
                                  daily_file_sum_rain7,
-                                 daily_file_sum_rain8)
+                                 daily_file_sum_rain8
+                                 )
 
 rm(daily_file_sum_rain1,
    daily_file_sum_rain2,
@@ -215,38 +216,24 @@ DT::datatable(daily_file_summer_sum_rain)
 ```
 #### STOP HERE I DONT THINK WE NEED THESE DECILE TABLES WE NEED NEW ONES!
 
-## Download the **Growing season** decile file 
+## Download the **Growing season** decile file that has the fixed dates for start of season
 
 ```{r sites_selction_download gs file, echo=FALSE, warning=FALSE}
 #GS_decile_table_df_25006 
 
  df_gs <- read.csv(
-    paste0(
+  paste0(
     file_path_input_data,
-         "/GS_decile_table_df_",
-         site_selected, 
-         ".csv") )
+    "/GS_decile_table_df_fixed_dates_",
+    site_selected, 
+    ".csv") )
 df_gs <- df_gs %>% mutate(across(where(is.numeric), round, 2))
 
 DT::datatable(df_gs)
 
 ```
 
-## Download the **Summer** decile file 
-```{r sites_selction_download summer file, echo=FALSE, warning=FALSE}
-#summer_decile_table_df_25006
-
-  df_summer <- read.csv(
-    paste0(
-    file_path_input_data,
-         "/summer_decile_table_df_",
-         site_selected, 
-         ".csv") )
-df_summer <- df_summer %>% mutate(across(where(is.numeric), round, 2))
-
-DT::datatable(df_summer)
-
-```
+##### STOP HERE#### LETS DO THIS FOR ONE START DATE AND SEE HOW WE GO
 
 ## From the histriocal rainfall data 
 
