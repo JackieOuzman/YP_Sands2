@@ -49,18 +49,26 @@ Month_end_GS_rainfall <- 10
 
 
 ## How to defined the start and end of summer months
-* The default is 1/11 (1st Nov) to 30/03 (30th March)
+* The default is 1/11 (1st Nov) to 31/03 (31th March)
 * If you want to change this modified the below code chunk.
 
-```{r define start and end of GS, echo=FALSE}
+```{r define start and end of summer months, echo=FALSE}
 
 
-Day_start_Summer_rainfall <- 1
-Month_start_summer_rainfall <- 11
-    
 
-Day_end_summer_rainfall <- 30
-Month_end_summer_rainfall <- 3
+### summer dates after GS
+Day_start_Summer_rainfall_after_GS <- 1
+Month_start_summer_rainfall_after_GS <- 11
+
+Day_end_summer_rainfall_after_GS <- 31 
+Month_end_summer_rainfall_after_GS <- 12
+
+### summer dates before GS
+Day_start_Summer_rainfall_before_GS <- 1
+Month_start_summer_rainfall_before_GS <- 1
+
+Day_end_summer_rainfall_before_GS <- 1 # if you want this to be the 31 /3 you need to add a day ie 1/4
+Month_end_summer_rainfall_before_GS <- 4
       
 
 ```
@@ -112,43 +120,63 @@ print(site_selected)
 path <-  file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Downloaded_files")
 
 df <- read.csv(paste0(path, "/Neater_file_", site_selected,  ".csv")) 
-     
-      ## add a clm with two dates marked as start and end of GS
-      df <- df %>% mutate(
-        start_end_GS_date = case_when(
-          month == Month_start_GS_rainfall & day_of_month == Day_start_GS_rainfall ~ "start_gs",
-          month == Month_end_GS_rainfall & day_of_month == Day_end_GS_rainfall ~ "end_gs",
-      TRUE ~ NA))
-      
-      ### fill the blanks
 
-      df <- df %>% fill(start_end_GS_date) %>%
-      mutate(
-      season = case_when(
+
+## add a clm with two dates marked as start and end of GS
+df <- df %>% mutate(
+  start_end_GS_date = case_when(
+    month == Month_start_GS_rainfall & day_of_month == Day_start_GS_rainfall ~ "start_gs",
+    month == Month_end_GS_rainfall & day_of_month == Day_end_GS_rainfall ~ "end_gs",
+    TRUE ~ NA))
+
+### fill the blanks
+
+df <- df %>% fill(start_end_GS_date) %>%
+  mutate(
+    season_GS = case_when(
       start_end_GS_date == "start_gs" ~ "gs",
       TRUE ~ "other"))
 
-      df <- df %>% select(-start_end_GS_date)
-      
-      
-      ## add a clm with two dates marked as start and end of Summer
-      df <- df %>% mutate(
-        start_end_summer_date = case_when(
-          month == Month_start_summer_rainfall & day_of_month == Day_start_summer_rainfall ~ "start_summer",
-          month == Month_end_summer_rainfall & day_of_month == Day_end_summer_rainfall ~ "end_summer",
-      TRUE ~ NA))
-      
-      ### fill the blanks
+df <- df %>% select(-start_end_GS_date)
 
-      df <- df %>% fill(start_end_summer_date) %>%
-      mutate(
-      season = case_when(
-      start_end_GS_date == "start_summer" ~ "summer",
+
+## add a clm with two dates marked as start and end of Summer
+
+df <- df %>% mutate(
+  start_end_summer_date = case_when(
+    #before GS
+    month == Month_start_summer_rainfall_before_GS & 
+      day_of_month == Day_start_Summer_rainfall_before_GS ~ "start_summer", 
+    month == Month_end_summer_rainfall_before_GS & 
+      day_of_month == Day_end_summer_rainfall_before_GS ~ "end_summer",
+    
+    #after GS
+    month == Month_start_summer_rainfall_after_GS & 
+      day_of_month == Day_start_Summer_rainfall_after_GS ~ "start_summer", 
+    month == Month_end_summer_rainfall_after_GS & 
+      day_of_month == Day_end_summer_rainfall_after_GS ~ "end_summer", 
+    
+        TRUE ~ NA))
+
+### fill the blanks
+
+df <- df %>% fill(start_end_summer_date) %>%
+  mutate(
+    season_summer = case_when(
+      start_end_summer_date == "start_summer" ~ "summer",
+      month == 12 & day_of_month == 31 ~ "summer",
       TRUE ~ "other"))
 
-      df <- df %>% select(-start_end_summer_date)
-      
-      
+df <- df %>% select(-start_end_summer_date)
+
+
+df <- df %>% mutate(
+  season = (case_when(
+    season_summer == "summer" ~ "summer",
+    season_GS == "gs" ~ "gs",
+    TRUE ~ "other"
+  )))
+
       
 ``` 
 
@@ -172,10 +200,12 @@ GS_defined_as <- paste0(
   " to ", Day_end_GS_rainfall, "/", Month_end_GS_rainfall)
 
 summer_defined_as <- paste0(
-  Day_start_summer_rainfall, "/", Month_start_summer_rainfall,
-  " to ", Day_end_summer_rainfall, "/", Month_end_summer_rainfall)
+  Day_start_Summer_rainfall_after_GS, "/", Month_start_summer_rainfall_after_GS,
+  " to ", Day_end_summer_rainfall_before_GS, "/", Month_end_summer_rainfall_before_GS)
 
-paste("summer season: ", summer_defined_as)
+paste("summer month: ", summer_defined_as)
+paste("GS season: ", GS_defined_as)
+
                 
       
 ```  
@@ -201,6 +231,7 @@ df <- df %>% filter(between(Date, as.Date(start), as.Date(end)))
 
 
 plot1 <- df %>%
+   filter(season!= "other") %>% 
     group_by(year, season) %>%
     summarise(sum_rain_season = sum(Rain, na.rm = TRUE)) %>%
     
@@ -234,6 +265,7 @@ plot1
 
   
   gs_rain <- df %>%
+    filter(season!= "other") %>% 
     group_by(year, season) %>%
     summarise(sum_rain_season = sum(Rain, na.rm = TRUE)) %>%
     filter(season == "gs")
@@ -259,7 +291,8 @@ GS_decile_table <- GS_decile_table %>%  select (GS_deciles_names, GS_decile_min_
            Years_included = paste0(
                                    year(min(df$Date)) ,  " to ", 
                                    year(max(df$Date))),
-          GS_period =   GS_defined_as)
+          GS_period =   GS_defined_as,
+          summer_period =   summer_defined_as)
           
                          
 
@@ -278,6 +311,7 @@ DT::datatable(GS_decile_table_df)
 
   
   summer_rain <- df %>%
+    filter(season!= "other") %>% 
     group_by(year, season) %>%
     summarise(sum_rain_season = sum(Rain, na.rm = TRUE)) %>%
     filter(season == "summer")
@@ -303,7 +337,9 @@ summer_decile_table <- summer_decile_table %>%  select (summer_deciles_names, su
            Years_included = paste0(
                                    year(min(df$Date)) ,  " to ", 
                                    year(max(df$Date))),
-          GS_period =   GS_defined_as)
+          GS_period =   GS_defined_as,
+          summer_period =   summer_defined_as
+          )
           
                          
 
@@ -344,7 +380,8 @@ gs_rain <- gs_rain %>%
   mutate(Station_name = paste0(distinct(df, Name)),
          Station_number = paste0(distinct(df, Number)) ,
          Years_included = paste0(year(start) ," to ",  year(end)),
-         GS_period =   GS_defined_as                     
+         GS_period =   GS_defined_as,
+         summer_period =   summer_defined_as 
   )
 
 gs_rain <- gs_rain %>%  rename(gs_sum_rain = sum_rain_season,
@@ -382,6 +419,7 @@ Year_with_Deciles <- Year_with_Deciles %>% select(
   summer_decile ,
   summer_sum_rain,
   GS_period ,
+ summer_period,
   Years_included )
 
 
