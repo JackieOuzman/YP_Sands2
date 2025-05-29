@@ -145,20 +145,22 @@ print(paste0("D5_Frontier_Est_Start_water = ", D5_Frontier_Est_Start_water))
 * **Baseline**
 * Estimated Evaporation baseline = 40% of GS rainfall
 * Yield Potential baseline = ((decile rainfall + Estimated Starting water) - Estimated Evaporation) * 20
-* Estimated yield potential baseline = 80% of Yield potential 
+* Economic yield potential baseline = 80% of Yield potential 
 
 
 * **Frontier**
 * Estimated Evaporation Frontier = using a regression equation.  0.18 * GS rainfall + 15.
 * Yield Potential Frontier = ((decile rainfall + Estimated Starting water) - Estimated Evaporation) * 26
-* Estimated yield potential Frontier = 80% of Yield potential 
+* Economic yield potential Frontier = 80% of Yield potential 
+
 
 
 ```{r append cals Baseline and Frontier, echo=FALSE}
 df_GS <- df_GS %>%
   mutate(
     Cal_Est_Evaporation_base = (GS_decile_max_rain *0.4), # (40% of GSR)
-      Cal_YP_base = ((GS_decile_max_rain +
+      
+    Cal_YP_base = ((GS_decile_max_rain +
                        D5_Baseline_Est_Start_water)-
                        (Cal_Est_Evaporation_base))*20 ,
      Cal_EYP_base = (Cal_YP_base*0.8), # 80% of Yield potential 
@@ -167,7 +169,9 @@ df_GS <- df_GS %>%
       Cal_YP_Front = ((GS_decile_max_rain+
                          D5_Frontier_Est_Start_water)-
                          (Cal_Est_Evaporation_Front))*26,
-     Cal_EYP_Front = Cal_YP_Front*0.8 #80% of Yield potential 
+     Cal_EYP_Front = Cal_YP_Front*0.8,  #80% of Yield potential ,
+    
+    Cal_EYP_Future = Cal_YP_Front
     )
 
 df_GS <- df_GS %>% mutate(across(where(is.numeric), round, 2))
@@ -181,7 +185,8 @@ display_df_GS <-  df_GS %>% dplyr::select(
   Cal_EYP_base,
   Cal_Est_Evaporation_Front,
   Cal_YP_Front,
-  Cal_EYP_Front
+  Cal_EYP_Front,
+  Cal_EYP_Future
 )
 
 DT::datatable(display_df_GS)
@@ -215,7 +220,8 @@ df_GS_long <- df_GS_long %>%
     Cal_type = case_when(
       Cal_type ==  "Cal_EYP_base" ~  "Baseline Practice",
       Cal_type ==  "Cal_EYP_Front" ~   "New Frontier",
-      Cal_type ==  "Cal_YP_Front" ~  "New Frontier Long term",
+      Cal_type ==  "Cal_EYP_Future" ~  "Future Long term",
+      
       .default = Cal_type
     ))
 
@@ -225,7 +231,8 @@ df_GS_long <- df_GS_long %>%
 ```{r plot work, echo=FALSE}
 
 plot1 <-df_GS_long %>% 
-  filter(Cal_type =="Baseline Practice" | Cal_type =="New Frontier" | Cal_type == "New Frontier Long term") %>% 
+  filter(Cal_type =="Baseline Practice" | Cal_type =="New Frontier" | Cal_type == "New Frontier Long term"| 
+           Cal_type == "Future Long term") %>% 
   
   ggplot(aes(x = GS_deciles_names , y = value, group=Cal_type) )+
   geom_point(aes(color=Cal_type))+
