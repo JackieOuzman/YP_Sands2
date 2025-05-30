@@ -95,23 +95,31 @@ str(daily_file)
 
 * If the daily met file won't allow you to choose so many dates (ie the dates have not happened yet for that year).
 * Make the dates the same for the subsequent defined date. 
-* The report is expecting 7 dates, but maybe you only have 2 date, so you can fill out date1 and date2 with real dates that occur in the daily met file, the rest of the dates should then become the last know dates i.e. date2.
+* The report is expecting 8 dates, but maybe you only have 2 date, so you can fill out date1 and date2 with real dates that occur in the daily met file, the rest of the dates should then become the last know dates i.e. date2.
 * You will need to **change the dates in the below code chunk** (if you don't want these).
 
+* Notes that these dates will need to match what was used to create the historical GS decile tables with a fixed date.
+* what year do you want to look at 
 
+```{r define year, echo=FALSE}
+
+### summer dates after GS
+year <- "2023"
+print(paste0("Year = ", year))
+```
 
 ```{r sites_selction_download GS file, echo=FALSE, warning=FALSE}
 
-start <- "2024-04-01"
+start <- paste0(year, "-04-01")
 
-defined_date1 <- "2024-04-01"
-defined_date2 <- "2024-05-01"
-defined_date3 <- "2024-06-01"
-defined_date4 <- "2024-07-01"
-defined_date5 <- "2024-08-01"
-defined_date6 <- "2024-09-01"
-defined_date7 <- "2024-10-01"
-defined_date8 <- "2024-10-15"
+defined_date1 <- paste0(year, "-04-01")
+defined_date2 <- paste0(year, "-05-01")
+defined_date3 <- paste0(year, "-06-01")
+defined_date4 <- paste0(year, "-07-01")
+defined_date5 <- paste0(year, "-08-01")
+defined_date6 <- paste0(year, "-09-01")
+defined_date7 <- paste0(year, "-10-01")
+defined_date8 <- paste0(year, "-10-15")
 
 
 ### Filter dataset based on years 
@@ -136,7 +144,7 @@ daily_file_sum_rain6 <- daily_file6 %>% summarise(sum_rain = sum(Rain, na.rm = T
 daily_file_sum_rain7 <- daily_file7 %>% summarise(sum_rain = sum(Rain, na.rm = TRUE)) %>% mutate(startGS =start, Defined_date =defined_date7, date = "date7")
  daily_file_sum_rain8 <- daily_file8 %>% summarise(sum_rain = sum(Rain, na.rm = TRUE)) %>% mutate(startGS =start, Defined_date =defined_date8, date = "date8")
 
-daily_file_sum_rain_all <- rbind(daily_file_sum_rain1,
+daily_file_sum_rain_all_GS <- rbind(daily_file_sum_rain1,
                                  daily_file_sum_rain2,
                                  daily_file_sum_rain3,
                                  daily_file_sum_rain4,
@@ -164,12 +172,16 @@ rm(daily_file_sum_rain1,
    daily_file8)
 ### Summary of rain
 
-DT::datatable(daily_file_sum_rain_all)
+daily_file_sum_rain_all_GS <- daily_file_sum_rain_all_GS %>% mutate(across(where(is.numeric), round, 2))
+daily_file_sum_rain_all_GS <- daily_file_sum_rain_all_GS %>%  select(date, startGS, Defined_date, sum_rain)
+
+DT::datatable(daily_file_sum_rain_all_GS)
 
 ```
 
 ## 2. how much rain over 'summer month"
 * use the daily met file to calculate the rain from 1/11 to 31/3.
+* note the year for this analysis is specified in below code chuck, if you want a different year change it here.
 
 ## How to defined the start and end of summer months and year
 * The default is 1/11 (1st Nov) to 31/03 (31th March)
@@ -177,8 +189,7 @@ DT::datatable(daily_file_sum_rain_all)
 
 ```{r define start and end of summer months, echo=FALSE}
 
-### summer dates after GS
-year <- "2004"
+
 #before GS
 start_of_summer_before_GS <- paste0(year,"-01-01")
 end_of_summer_before_GS <- paste0(year,"-03-31") #?should this be 1/4
@@ -187,7 +198,8 @@ end_of_summer_before_GS <- paste0(year,"-03-31") #?should this be 1/4
 start_of_summer_after_GS <- paste0(year,"-11-01")
 end_of_summer_after_GS <- paste0(year,"-12-31")
 
-print(paste0("Year = ", year))
+
+print(paste0("start of summer months = ", start_of_summer_after_GS, " end of summer months = ",end_of_summer_before_GS ))
 ```
 
 
@@ -210,13 +222,16 @@ daily_file_summer_sum_rain <- daily_file_summer %>%
 
 
 ### Summary of summer rain
-
+daily_file_summer_sum_rain <- daily_file_summer_sum_rain %>% select(
+  start_summer, end_summer, sum_rain)
 DT::datatable(daily_file_summer_sum_rain)
 
 ```
-#### STOP HERE I DONT THINK WE NEED THESE DECILE TABLES WE NEED NEW ONES!
+
 
 ## Download the **Growing season** decile file that has the fixed dates for start of season
+
+* Note these dates should be compatible with the dates used to summaries this years GS.
 
 ```{r sites_selction_download gs file, echo=FALSE, warning=FALSE}
 #GS_decile_table_df_25006 
@@ -229,14 +244,61 @@ DT::datatable(daily_file_summer_sum_rain)
     ".csv") )
 df_gs <- df_gs %>% mutate(across(where(is.numeric), round, 2))
 
+
+DT::datatable(distinct(df_gs, defined_date), caption = "List of dates used to define the start of GS, season end is the same",)
+
 DT::datatable(df_gs)
+
+
+
 
 ```
 
-##### STOP HERE#### LETS DO THIS FOR ONE START DATE AND SEE HOW WE GO
 
-## From the histriocal rainfall data 
 
+## Add some of this years data to the histriocal GS rainfall data (with fixed dates)
+
+* 1. This years GS for number of different dates
+
+```{r add how much GS rain this year, echo=FALSE, warning=FALSE}
+### make a new clm called Defined date from the date range clm defined_date.
+
+#distinct(df_gs,defined_date )
+#distinct(daily_file_sum_rain_all_GS,Defined_date )
+
+df_gs <- df_gs %>% 
+  mutate(Defined_date_common_year = case_when(
+    defined_date == "from 1-4to 14-10" ~ paste0(year, "-04-01"),
+    defined_date == "from 1-5to 14-10" ~ paste0(year, "-05-01"),
+    defined_date == "from 1-6to 14-10" ~ paste0(year, "-06-01"),
+    defined_date == "from 1-7to 14-10" ~ paste0(year, "-07-01"),
+    defined_date == "from 1-8to 14-10" ~ paste0(year, "-08-01"),
+    defined_date == "from 1-9to 14-10" ~ paste0(year, "-09-01"),
+    defined_date == "from 1-10to 14-10" ~ paste0(year, "-10-01")
+  ))
+
+## join the decile GS historical data 
+names(daily_file_sum_rain_all_GS)
+df_gs <- left_join(df_gs , daily_file_sum_rain_all_GS,  by = join_by(Defined_date_common_year == Defined_date))
+
+```
+
+* 2. This years summer rainfall
+
+```{r add how much GS rain this year, echo=FALSE, warning=FALSE}
+
+### add this years summer rainfall
+df_gs <- df_gs %>% 
+  mutate(summer_rain_sum = daily_file_summer_sum_rain$sum_rain)
+
+
+#rename some clm to make it clear
+df_gs <- df_gs %>% rename(GS_rainfall_defined_date_historical =GS_decile_max_rain,
+                          GS_rainfall_defined_date_current_yr = sum_rain,
+                          summer_rain_current_yr = summer_rain_sum)
+
+
+```
 
 
 
@@ -246,18 +308,18 @@ DT::datatable(df_gs)
 * The below is an example of for one date which contains the below steps for checking.
 * after this section a loop will run through a function retaining only the forecast yield by date. 
 
-* **Baseline**
 
-* summer_rain_decile5 = Add the summer rainfall for decile 5
 
-* 1. `PAW` (for decile 5) = 25% of summer rainfall 
-* 2. `rainfall_to_date` = amount of rainfall from 1/4 to defined date 
-* 3. `rainfall_to_end_GS` = *not sure what this is, perhaps its the amount of rainfall in GS - rainfall to defined date*
-* 4. `estimated_crop_water_use` (mm) = `PAW` + `rainfall_to_date` 
-* 5. `Evaporation_on_term` = `estimated_crop_water_use` * 0.267 + 11.7
-* 6. `Baseline_TE_term` = 21
-* 7. `PY` (Potential Yield) = ((`estimated_crop_water_use` - `Evaporation_on_term`)* `Baseline_TE_term`)/1000
-* 8. Yield_forecast = 80% * `PY` 
+* **Baseline**						
+* 1. ` Estimated Starting Water (mm) = Summer rainfall *.25						
+* 2. `Estimated Evaporation` = (Estimated Rainfall to maturity + GSR to date) *0.4						
+* 3. `Estimated Water Supply` = (GS Rain + Estimated rainfall to maturity+ Estimated Starting water) - Estimated Evaporation						
+* 4. `Estimated Yield Potential (kg/ha) = Estimated Water Supply *20						
+* 5.  Yield_forecast = 80% * `EPY` 						
+
+
+
+
 
 
 
@@ -270,78 +332,37 @@ DT::datatable(df_gs)
 
 ```{r append cals Baseline, echo=FALSE}
 
-defined_date <- defined_date1
-
-df_gs_baseline_values <- df_gs %>% select(
-  Station_name,
-  Station_number,
-  Years_included ,
-  GS_period,
-  GS_deciles_names, 
-  GS_decile_max_rain
-)
-  
-## get the rainfall for summer rainfall decile 5
-summer_rain_decile5 <- df_summer %>% 
-  filter(summer_deciles_names =="decile_5" ) %>% 
-  select(summer_decile_max_rain)
-summer_rain_decile5 <-   summer_rain_decile5$summer_decile_max_rain
-#summer_rain_decile5
-df_gs_baseline_values <- df_gs_baseline_values %>% mutate(summer_rain_decile5 = summer_rain_decile5)
+df_gs <- df_gs %>% 
+  mutate(est_sw_base = (summer_rain_current_yr*.25),
+         
+         est_evap_base = (GS_rainfall_defined_date_historical +GS_rainfall_defined_date_current_yr)*0.4,
+         
+         est_water_supp_base = ((GS_rainfall_defined_date_current_yr + 
+                             GS_rainfall_defined_date_historical+ 
+                             est_sw_base) -   est_evap_base),
+         
+         est_yp_base = (est_water_supp_base *20),
+         Yld_forecast_base = (est_yp_base*.80)
+         )
 
 
-# Est start water
-df_gs_baseline_values <- df_gs_baseline_values %>%
-  mutate(PAW = summer_rain_decile5*.25)
-
-
-## get the rainfall to date
-rainfall_to_date <- daily_file_sum_rain_all %>% 
-  filter(Defined_date == defined_date ) %>% 
-  select(sum_rain)
-rainfall_to_date <-   rainfall_to_date$sum_rain
-df_gs_baseline_values <- df_gs_baseline_values %>% 
-  mutate(
-    defined_date = defined_date,
-    rainfall_to_date = rainfall_to_date
-    )
-
-## rainfall to maturity
-df_gs_baseline_values <- df_gs_baseline_values %>% 
-  mutate(rainfall_to_end_GS = GS_decile_max_rain - rainfall_to_date)
-
-
-#Estimated_crop_water_use = `Baseline_Est_Start_water`  + `Rainfall_to_maturity`
-df_gs_baseline_values <- df_gs_baseline_values %>% 
-  mutate(estimated_crop_water_use = PAW + rainfall_to_end_GS)
-
-
-#Baseline_Evaporation_on_term = `Baseline_Estimated_crop_water_use` * 0.267 + 11.7
-df_gs_baseline_values <- df_gs_baseline_values %>% 
-  mutate(Evaporation_on_term = estimated_crop_water_use * 0.267 + 11.7)
-
-
-#Baseline_TE_term = 21
-df_gs_baseline_values <- df_gs_baseline_values %>% 
-  mutate(Baseline_TE_term = 21)
-
-
-#Potential Yield (Baseline_PY) = ((`Baseline_Estimated_crop_water_use` - `Baseline_Evaporation_on_term`)* `Baseline_TE_term`)/1000
-df_gs_baseline_values <- df_gs_baseline_values %>% 
-  mutate(PY = ((estimated_crop_water_use - Evaporation_on_term)* Baseline_TE_term)/1000)
-
-
-#Yield baseline = 80% * `Baseline_PY` 
-df_gs_baseline_values <- df_gs_baseline_values %>% 
-  mutate(Yield_forecast = 0.8* PY)
-
-
-df_gs_baseline_values <- df_gs_baseline_values %>% mutate(across(where(is.numeric), round, 2))
  
- DT::datatable(df_gs_baseline_values)
+ df_gs_base <- df_gs %>% select(Defined_date_common_year, GS_deciles_names, GS_rainfall_defined_date_historical,
+                               Station_name, Station_number, summer_rain_current_yr, GS_rainfall_defined_date_current_yr,
+                               
+                               est_sw_base,
+                               est_evap_base,
+                               est_water_supp_base,
+                               est_yp_base,
+                               Yld_forecast_base)
  
+ df_gs_base <- df_gs_base %>% mutate(across(where(is.numeric), round, 2))
+  DT::datatable(df_gs_base)
 
 ```
+
+#### UP TO HERE ####
+
 ###### The second code chunk is the Frontier values and calulations
 
 ## Calulate a number of variables:
