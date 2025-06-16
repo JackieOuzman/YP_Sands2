@@ -69,15 +69,15 @@ DT::datatable(list_of_file)
 * Shiny application would be nice but then I have problem saving the output.
 
 ```{r sites_selction, echo=FALSE}
- site_selected <- "21002"
+ site_selected <- "25006"
 print(site_selected)
 ```
 ## Download the **daily met** file to calulate this years inputs
 * 1. how much rain since the start of the GS
-* use the daily met file to calculate the rain from start of growing season to defined date.
+*    use the daily met file to calculate the rain from start of growing season to defined date.
 
 * 2. how much rain over 'summer month"
-* use the daily met file to calculate the rain from 1/11 to 31/3.
+*    use the daily met file to calculate the rain from 1/11 to 31/3.
 
 
 ```{r daily met file, echo=FALSE, warning=FALSE}
@@ -89,7 +89,7 @@ print(site_selected)
          ".csv") )
 daily_file <- daily_file %>% mutate(across(where(is.numeric), round, 2))
 
-str(daily_file)
+#str(daily_file)
 ```
 ## 1. how much rain since the start of the GS.
 
@@ -99,12 +99,12 @@ str(daily_file)
 * You will need to **change the dates in the below code chunk** (if you don't want these).
 
 * Notes that these dates will need to match what was used to create the historical GS decile tables with a fixed date.
-* what year do you want to look at 
+* what year do you want to look at for the growing season ?
 
 ```{r define year, echo=FALSE}
 
 ### summer dates after GS
-year <- "2023"
+year <- "2025"
 print(paste0("Year = ", year))
 ```
 
@@ -194,9 +194,10 @@ DT::datatable(daily_file_sum_rain_all_GS)
 start_of_summer_before_GS <- paste0(year,"-01-01")
 end_of_summer_before_GS <- paste0(year,"-03-31") #?should this be 1/4
 
-#after GS
-start_of_summer_after_GS <- paste0(year,"-11-01")
-end_of_summer_after_GS <- paste0(year,"-12-31")
+#after GS 
+#after GS this should be the year before..
+start_of_summer_after_GS <- paste0(as.numeric(year)-1,"-11-01")
+end_of_summer_after_GS <- paste0(as.numeric(year)-1,"-12-31")
 
 
 print(paste0("start of summer months = ", start_of_summer_after_GS, " end of summer months = ",end_of_summer_before_GS ))
