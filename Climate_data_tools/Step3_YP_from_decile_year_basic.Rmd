@@ -68,7 +68,7 @@ DT::datatable(list_of_file)
 * Shiny application would be nice but then I have problem saving the output.
 
 ```{r sites_selction, echo=FALSE}
- site_selected <- "25006"
+ site_selected <- "76000"
 print(site_selected)
 ```
 
@@ -262,10 +262,10 @@ plot1
 path_saved_files <- file_path_input_data<-file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Decile_tables")
 
 ggsave(plot = plot1,
-       filename = paste0(path_saved_files,"/Plot_YP based on GS decile years.png" ), 
+       filename = paste0(path_saved_files,"/Plot_YP based on GS decile years",site_selected ,".png" ), 
        width = 20, height = 12, units = "cm")
 
 
 write_csv(df_GS_long, 
-          file = paste0(path_saved_files,"/GS_decile_table_withYP_cals_long.csv"))
+          file = paste0(path_saved_files,"/GS_decile_table_withYP_cals_long",site_selected ,".csv"))
 ```
