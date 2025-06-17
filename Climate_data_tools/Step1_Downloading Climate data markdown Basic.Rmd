@@ -56,7 +56,7 @@ DT::datatable(list_of_sites)
 * Shiny application would be nice but then I have problem saving the output.
 
 ```{r sites_selction, echo=FALSE}
- site_selected <- "25003"
+ site_selected <- "76000"
 print(site_selected)
 ```
 
@@ -194,7 +194,7 @@ max(df$Date)
 ```
 ## what is the last date in the file just downloaded?
 
-```{r last date in the dowload folder, echo=FALSE, message=FALSE, warning=FALSE}
+```{r site in the dowload folder, echo=FALSE, message=FALSE, warning=FALSE}
 
 file_path_input_data<-file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Downloaded_files")
 df_in_download_folder <- read.csv(paste0(file_path_input_data, "/Neater_file_", site_selected,  ".csv")) 
@@ -207,6 +207,6 @@ print( max(df_in_download_folder$Date))
 
 ```{r last date in the dowload folder, echo=FALSE, message=FALSE, warning=FALSE}
 
-print( unique(df_in_download_folder$Name)
+print( unique(df_in_download_folder$Name))
        
 ```
