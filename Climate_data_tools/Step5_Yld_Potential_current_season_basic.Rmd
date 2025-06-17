@@ -1,5 +1,5 @@
 ---
-title: "Step 4 Yield potential for current season"
+title: "Step 4 Yield potential for current season. Dynamic to suit availble dates in GS"
 author: "Jackie"
 date: "2025-03-31"
 output: html_document
@@ -61,10 +61,10 @@ DT::datatable(list_of_sites)
 
 list_of_file <- list.files(path = file_path_input_data, pattern = ".csv")
 list_of_file <- as.data.frame(list_of_file)
-DT::datatable(list_of_file)
+#DT::datatable(list_of_file)
  
 ```
-## Select the site number
+## Select the **site number**
 * create a new variable in the below code chuck that will be used for the analysis
 * Shiny application would be nice but then I have problem saving the output.
 
@@ -72,12 +72,24 @@ DT::datatable(list_of_file)
  site_selected <- "25006"
 print(site_selected)
 ```
+## Select the **GS year**
+
+* what year do you want to look at for **the growing season ?**
+
+```{r define year, echo=FALSE}
+
+### summer dates after GS
+year <- "2025"
+print(paste0("Year = ", year))
+```
+
+
 ## Download the **daily met** file to calulate this years inputs
 * 1. how much rain since the start of the GS
 *    use the daily met file to calculate the rain from start of growing season to defined date.
 
 * 2. how much rain over 'summer month"
-*    use the daily met file to calculate the rain from 1/11 to 31/3.
+*    use the daily met file to calculate the rain from 1/11 to 31/3. Note its is the Nov and Dec in the year prior to the GS
 
 
 ```{r daily met file, echo=FALSE, warning=FALSE}
@@ -94,19 +106,12 @@ daily_file <- daily_file %>% mutate(across(where(is.numeric), round, 2))
 ## 1. how much rain since the start of the GS.
 
 * If the daily met file won't allow you to choose so many dates (ie the dates have not happened yet for that year).
+* The script looks for dates that exist in your selected year and the range of predefined GS dates and only keeps the existing dates for the analysis.
 * Make the dates the same for the subsequent defined date. 
-* The report is expecting 8 dates, but maybe you only have 2 date, so you can fill out date1 and date2 with real dates that occur in the daily met file, the rest of the dates should then become the last know dates i.e. date2.
-* You will need to **change the dates in the below code chunk** (if you don't want these).
+* The report is expecting 8 dates * You will need to **change the dates in the below code chunk** (if you don't want these).
 
 * Notes that these dates will need to match what was used to create the historical GS decile tables with a fixed date.
-* what year do you want to look at for the growing season ?
 
-```{r define year, echo=FALSE}
-
-### summer dates after GS
-year <- "2025"
-print(paste0("Year = ", year))
-```
 
 ```{r sites_selction_download GS file, echo=FALSE, warning=FALSE}
 
@@ -172,14 +177,33 @@ rm(daily_file_sum_rain1,
    daily_file8)
 ### Summary of rain
 
+
+
+```
+## 1a. what GS dates exist in the downloaded met file .
+```{r check dates sites_selction_download GS file, echo=FALSE, warning=FALSE}
 daily_file_sum_rain_all_GS <- daily_file_sum_rain_all_GS %>% mutate(across(where(is.numeric), round, 2))
 daily_file_sum_rain_all_GS <- daily_file_sum_rain_all_GS %>%  select(date, startGS, Defined_date, sum_rain)
+
+
+max_date <- unique(max(daily_file$Date))
+daily_file_sum_rain_all_GS <- daily_file_sum_rain_all_GS %>% mutate(max_date_climate_date = unique(max(daily_file$Date)))
+
+### is the data range valid?
+daily_file_sum_rain_all_GS <- daily_file_sum_rain_all_GS %>% 
+  mutate(max_date_climate_date = unique(max(daily_file$Date)),
+           date_exists_in_met_file = 
+           case_when(
+             Defined_date < max_date ~ "date_exists",
+             .default = "date_outside_range")
+           )                                   
+
 
 DT::datatable(daily_file_sum_rain_all_GS)
 
 ```
 
-## 2. How much rain over 'summer month"
+## 2. How much rain over "summer month"
 * use the daily met file to calculate the rain from 1/11 to 31/3.
 * note the year for this analysis is specified in below code chuck, if you want a different year change it here.
 
@@ -233,6 +257,13 @@ DT::datatable(daily_file_summer_sum_rain)
 ## Download the **Growing season** decile file that has the fixed dates for start of season
 
 * Note these dates should be compatible with the dates used to summaries this years GS.
+* these dates will be modified to match what dates 'date_exists' in the current year 
+
+## Add some of **this** years data to the histriocal GS rainfall data 
+
+### * 1. This years GS rainfall for number of different dates
+
+### * 2. This years summer rainfall
 
 ```{r sites_selction_download gs file, echo=FALSE, warning=FALSE}
 #GS_decile_table_df_25006 
@@ -247,22 +278,8 @@ DT::datatable(daily_file_summer_sum_rain)
 df_gs <- df_gs %>% mutate(across(where(is.numeric), round, 2))
 
 
-DT::datatable(distinct(df_gs, defined_date), caption = "List of dates used to define the start of GS, season end is the same",)
-
-DT::datatable(df_gs)
 
 
-
-
-```
-
-
-
-## Add some of this years data to the histriocal GS rainfall data 
-
-### * 1. This years GS rainfall for number of different dates
-
-```{r fixed dates for analysis, echo=FALSE, warning=FALSE}
 ### make a new clm called Defined date from the date range clm defined_date.
 
 #distinct(df_gs,defined_date )
@@ -283,9 +300,16 @@ df_gs <- df_gs %>%
 #names(daily_file_sum_rain_all_GS)
 df_gs <- left_join(df_gs , daily_file_sum_rain_all_GS,  by = join_by(Defined_date_common_year == Defined_date))
 
+## keep only the dates that exists
+df_gs <- df_gs %>% filter(date_exists_in_met_file == "date_exists")
+
+# DT::datatable(distinct(df_gs, defined_date), caption = "List of dates used to define the start of GS, season end is the same",)
+# 
+ DT::datatable(df_gs)
+
 ```
 
-### * 2. This years summer rainfall
+
 
 ```{r add how much GS rain this year, echo=FALSE, warning=FALSE}
 
@@ -520,10 +544,10 @@ plot1
 path_saved_files <- file_path_input_data<-file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Forecast_ylds")
 
 ggsave(plot = plot1,
-       filename = paste0(path_saved_files,"/Forecast_yld_plot_", site_selected, ".png" ),
+       filename = paste0(path_saved_files,"/Forecast_yld_plot_", "site_", site_selected, "_year_", year, ".png" ),
        width = 20, height = 12, units = "cm")
 
 
 write_csv(df_gs,
-          file = paste0(path_saved_files,"/Forecast_yld_",site_selected, ".csv"))
+          paste0(path_saved_files,"/Forecast_yld_plot_", "site_", site_selected, "_year_", year, ".csv" ))
 ```
