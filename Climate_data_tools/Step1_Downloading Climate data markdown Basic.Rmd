@@ -17,6 +17,8 @@ library(DT)
 * Series of R markdown. Best to run these in order, but once you have historical yields step 2 and 3 they don’t need to be repeated to get a yield forecast.  
 **Step 1** 
  *	Download patch point met file, tidy up and saved to directory. User to specify the site number.  
+ *  This is super glitchy. If you run it as a rmarkdown the new data won' be updated so run this code chunck by code chunck.
+ 
 **Step 2** 
 *	User defined site, and ‘season’.
 *	Create plot sum of rain, per year, per season for site selected
@@ -54,7 +56,7 @@ DT::datatable(list_of_sites)
 * Shiny application would be nice but then I have problem saving the output.
 
 ```{r sites_selction, echo=FALSE}
- site_selected <- "76000"
+ site_selected <- "25003"
 print(site_selected)
 ```
 
@@ -179,4 +181,32 @@ file_info <- file_info %>%
   dplyr::select(atime)
 #names(file_info)
 DT::datatable(file_info)
+```
+
+# Just some checks is the script working?
+1. What have you just downloaded? 
+2. Does it match what was written to the download folder
+
+## what is the last date in the data just downloaded?
+```{r last date in the df, echo=FALSE, message=FALSE, warning=FALSE}
+max(df$Date)
+
+```
+## what is the last date in the file just downloaded?
+
+```{r last date in the dowload folder, echo=FALSE, message=FALSE, warning=FALSE}
+
+file_path_input_data<-file.path("H:","Output-2", "Analysis", "Scripts", "Jackie", "Downloaded_files")
+df_in_download_folder <- read.csv(paste0(file_path_input_data, "/Neater_file_", site_selected,  ".csv")) 
+
+
+print( max(df_in_download_folder$Date))
+
+```
+## what is the site in the file just downloaded?
+
+```{r last date in the dowload folder, echo=FALSE, message=FALSE, warning=FALSE}
+
+print( unique(df_in_download_folder$Name)
+       
 ```
