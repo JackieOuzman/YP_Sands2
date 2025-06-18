@@ -120,11 +120,13 @@ start <- paste0(year, "-04-01")
 defined_date1 <- paste0(year, "-04-01")
 defined_date2 <- paste0(year, "-05-01")
 defined_date3 <- paste0(year, "-06-01")
-defined_date4 <- paste0(year, "-07-01")
-defined_date5 <- paste0(year, "-08-01")
-defined_date6 <- paste0(year, "-09-01")
-defined_date7 <- paste0(year, "-10-01")
-defined_date8 <- paste0(year, "-10-15")
+defined_date4 <- paste0(year, "-06-15")
+defined_date5 <- paste0(year, "-07-01")
+defined_date6 <- paste0(year, "-07-15")
+defined_date7 <- paste0(year, "-08-01")
+defined_date8 <- paste0(year, "-09-01")
+defined_date9 <- paste0(year, "-10-01")
+defined_date10 <- paste0(year, "-10-15")
 
 
 ### Filter dataset based on years 
@@ -137,7 +139,8 @@ daily_file5 <- daily_file %>% filter(between(Date, as.Date(start), as.Date(defin
 daily_file6 <- daily_file %>% filter(between(Date, as.Date(start), as.Date(defined_date6)))
 daily_file7 <- daily_file %>% filter(between(Date, as.Date(start), as.Date(defined_date7)))
 daily_file8 <- daily_file %>% filter(between(Date, as.Date(start), as.Date(defined_date8)))
-
+daily_file9 <- daily_file %>% filter(between(Date, as.Date(start), as.Date(defined_date9)))
+daily_file10 <- daily_file %>% filter(between(Date, as.Date(start), as.Date(defined_date10)))
 
 
 daily_file_sum_rain1 <- daily_file1 %>% summarise(sum_rain = sum(Rain, na.rm = TRUE)) %>% mutate(startGS =start, Defined_date =defined_date1, date = "date1")
@@ -148,7 +151,9 @@ daily_file_sum_rain5 <- daily_file5 %>% summarise(sum_rain = sum(Rain, na.rm = T
 daily_file_sum_rain6 <- daily_file6 %>% summarise(sum_rain = sum(Rain, na.rm = TRUE)) %>% mutate(startGS =start, Defined_date =defined_date6, date = "date6")
 daily_file_sum_rain7 <- daily_file7 %>% summarise(sum_rain = sum(Rain, na.rm = TRUE)) %>% mutate(startGS =start, Defined_date =defined_date7, date = "date7")
  daily_file_sum_rain8 <- daily_file8 %>% summarise(sum_rain = sum(Rain, na.rm = TRUE)) %>% mutate(startGS =start, Defined_date =defined_date8, date = "date8")
-
+  daily_file_sum_rain9 <- daily_file9 %>% summarise(sum_rain = sum(Rain, na.rm = TRUE)) %>% mutate(startGS =start, Defined_date =defined_date9, date = "date9")
+   daily_file_sum_rain10 <- daily_file10 %>% summarise(sum_rain = sum(Rain, na.rm = TRUE)) %>% mutate(startGS =start, Defined_date =defined_date10, date = "date10")
+ 
 daily_file_sum_rain_all_GS <- rbind(daily_file_sum_rain1,
                                  daily_file_sum_rain2,
                                  daily_file_sum_rain3,
@@ -156,7 +161,9 @@ daily_file_sum_rain_all_GS <- rbind(daily_file_sum_rain1,
                                  daily_file_sum_rain5,
                                  daily_file_sum_rain6,
                                  daily_file_sum_rain7,
-                                 daily_file_sum_rain8
+                                 daily_file_sum_rain8,
+                                 daily_file_sum_rain9,
+                                 daily_file_sum_rain10
                                  )
 
 rm(daily_file_sum_rain1,
@@ -167,6 +174,8 @@ rm(daily_file_sum_rain1,
    daily_file_sum_rain6,
    daily_file_sum_rain7,
    daily_file_sum_rain8,
+   daily_file_sum_rain9,
+   daily_file_sum_rain10,
    daily_file1,
    daily_file2,
    daily_file3,
@@ -174,7 +183,9 @@ rm(daily_file_sum_rain1,
    daily_file5,
    daily_file6,
    daily_file7,
-   daily_file8)
+   daily_file8,
+   daily_file9,
+   daily_file10)
 ### Summary of rain
 
 
@@ -290,7 +301,9 @@ df_gs <- df_gs %>%
     defined_date == "from 1-4to 14-10" ~ paste0(year, "-04-01"),
     defined_date == "from 1-5to 14-10" ~ paste0(year, "-05-01"),
     defined_date == "from 1-6to 14-10" ~ paste0(year, "-06-01"),
+    defined_date == "from 15-6to 14-10" ~ paste0(year, "-06-15"),
     defined_date == "from 1-7to 14-10" ~ paste0(year, "-07-01"),
+    defined_date == "from 15-7to 14-10" ~ paste0(year, "-07-15"),
     defined_date == "from 1-8to 14-10" ~ paste0(year, "-08-01"),
     defined_date == "from 1-9to 14-10" ~ paste0(year, "-09-01"),
     defined_date == "from 1-10to 14-10" ~ paste0(year, "-10-01")
@@ -493,7 +506,9 @@ df_plot_long$defined_date <- factor(
     "2023-04-01",
     "2023-05-01",
     "2023-06-01",
+    "2023-06-15",
     "2023-07-01",
+    "2023-07-15",
     "2023-08-01",
     "2023-09-01",
     "2023-10-01"

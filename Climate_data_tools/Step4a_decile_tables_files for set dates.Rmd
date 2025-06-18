@@ -150,17 +150,23 @@ Month_defined_date2 <- 5
 Day_defined_date3 <- 1 
 Month_defined_date3 <- 6 
 
-Day_defined_date4 <- 1 
-Month_defined_date4 <- 7
+Day_defined_date4 <- 15 
+Month_defined_date4 <- 6 
 
 Day_defined_date5 <- 1 
-Month_defined_date5 <- 8 
+Month_defined_date5 <- 7
 
-Day_defined_date6 <- 1 
-Month_defined_date6 <- 9 
+Day_defined_date6 <- 15 
+Month_defined_date6 <- 7 
 
 Day_defined_date7 <- 1 
-Month_defined_date7 <- 10
+Month_defined_date7 <- 8 
+
+Day_defined_date8 <- 1 
+Month_defined_date8 <- 9 
+
+Day_defined_date9 <- 1 
+Month_defined_date9 <- 10
 
 date1 <- paste0(Day_defined_date1, "-", Month_defined_date1)
 date2 <- paste0(Day_defined_date2, "-", Month_defined_date2)
@@ -169,6 +175,8 @@ date4 <- paste0(Day_defined_date4, "-", Month_defined_date4)
 date5 <- paste0(Day_defined_date5, "-", Month_defined_date5)
 date6 <- paste0(Day_defined_date6, "-", Month_defined_date6)
 date7 <- paste0(Day_defined_date7, "-", Month_defined_date7)
+date8 <- paste0(Day_defined_date8, "-", Month_defined_date8)
+date9 <- paste0(Day_defined_date9, "-", Month_defined_date9)
 
 
 ```
@@ -219,6 +227,17 @@ df <- df %>% mutate(
     month == Month_end_GS_rainfall & day_of_month == Day_end_GS_rainfall ~ "end_gs",
     TRUE ~ NA))
 
+df <- df %>% mutate(
+  start_end_GS_date8 = case_when(
+    month == Month_defined_date8 & day_of_month == Day_defined_date8 ~ "start_gs",
+    month == Month_end_GS_rainfall & day_of_month == Day_end_GS_rainfall ~ "end_gs",
+    TRUE ~ NA))
+
+df <- df %>% mutate(
+  start_end_GS_date9 = case_when(
+    month == Month_defined_date9 & day_of_month == Day_defined_date9 ~ "start_gs",
+    month == Month_end_GS_rainfall & day_of_month == Day_end_GS_rainfall ~ "end_gs",
+    TRUE ~ NA))
 
 ### fill the blanks
 
@@ -258,13 +277,28 @@ df <- df %>%
     start_end_GS_date7 == "start_gs" ~ "gs",
     TRUE ~ "other"))
 
+df <- df %>% 
+  fill(start_end_GS_date8) %>%
+  mutate(  season_GS8 = case_when(
+    start_end_GS_date8 == "start_gs" ~ "gs",
+    TRUE ~ "other"))
+
+df <- df %>% 
+  fill(start_end_GS_date9) %>%
+  mutate(  season_GS9 = case_when(
+    start_end_GS_date9 == "start_gs" ~ "gs",
+    TRUE ~ "other"))
+
 df <- df %>% select(-start_end_GS_date1, 
                               -start_end_GS_date2,
                               -start_end_GS_date3,
                               -start_end_GS_date4,
                               -start_end_GS_date5,
                               -start_end_GS_date6,
-                              -start_end_GS_date7)
+                              -start_end_GS_date7,
+                              -start_end_GS_date8,
+                              -start_end_GS_date9
+                    )
 ```
 
 ```{r decile table GS step 2, echo=FALSE, message=FALSE, warning=FALSE}
@@ -297,6 +331,15 @@ gs_rain7 <- df %>%
   group_by(year, season_GS7) %>%
   summarise(sum_rain_season = sum(Rain, na.rm = TRUE)) %>%
   filter(season_GS7 == "gs")
+gs_rain8 <- df %>%
+  group_by(year, season_GS8) %>%
+  summarise(sum_rain_season = sum(Rain, na.rm = TRUE)) %>%
+  filter(season_GS8 == "gs")
+gs_rain9 <- df %>%
+  group_by(year, season_GS9) %>%
+  summarise(sum_rain_season = sum(Rain, na.rm = TRUE)) %>%
+  filter(season_GS9 == "gs")
+
 
 ```
 
@@ -409,7 +452,39 @@ GS_decile_table7 <- data.frame(
   mutate(defined_date = paste0("from ", date7, "to 14-10")) %>%
   select(GS_deciles_names, GS_decile_min_rain, GS_decile_max_rain, defined_date)
 #add in the min value to table
-GS_decile_table7[1,2] <-  min(gs_rain6$sum_rain_season)
+GS_decile_table7[1,2] <-  min(gs_rain7$sum_rain_season)
+
+#date8
+GS_decile_max_rain8 <- quantile(gs_rain8$sum_rain_season, c(.1, .2, .3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0))
+GS_deciles_names8 <- c("decile_1", "decile_2", "decile_3", "decile_4", "decile_5", "decile_6", "decile_7", "decile_8", "decile_9", "decile_10")
+
+GS_decile_table8 <- data.frame(
+  GS_decile_max_rain = GS_decile_max_rain8,
+  GS_deciles_names = GS_deciles_names8,
+  row.names = NULL
+) %>%
+  mutate(GS_decile_min_rain = lag(GS_decile_max_rain8 + 0.1)) %>%
+  mutate(defined_date = paste0("from ", date8, "to 14-10")) %>%
+  select(GS_deciles_names, GS_decile_min_rain, GS_decile_max_rain, defined_date)
+#add in the min value to table
+GS_decile_table8[1,2] <-  min(gs_rain8$sum_rain_season)
+
+
+#date9
+GS_decile_max_rain9 <- quantile(gs_rain9$sum_rain_season, c(.1, .2, .3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0))
+GS_deciles_names9 <- c("decile_1", "decile_2", "decile_3", "decile_4", "decile_5", "decile_6", "decile_7", "decile_8", "decile_9", "decile_10")
+
+GS_decile_table9 <- data.frame(
+  GS_decile_max_rain = GS_decile_max_rain9,
+  GS_deciles_names = GS_deciles_names9,
+  row.names = NULL
+) %>%
+  mutate(GS_decile_min_rain = lag(GS_decile_max_rain9 + 0.1)) %>%
+  mutate(defined_date = paste0("from ", date9, "to 14-10")) %>%
+  select(GS_deciles_names, GS_decile_min_rain, GS_decile_max_rain, defined_date)
+#add in the min value to table
+GS_decile_table9[1,2] <-  min(gs_rain8$sum_rain_season)
+
 
 ```
 
@@ -421,7 +496,9 @@ GS_decile_table <- rbind(GS_decile_table1,
                          GS_decile_table4,
                          GS_decile_table5,
                          GS_decile_table6,
-                         GS_decile_table7)
+                         GS_decile_table7,
+                         GS_decile_table8,
+                         GS_decile_table9)
 
 
 rm(
@@ -432,7 +509,8 @@ rm(
   GS_decile_table5,
   GS_decile_table6,
   GS_decile_table7,
-  
+  GS_decile_table8,
+  GS_decile_table9,
   
   GS_decile_max_rain1,
   GS_decile_max_rain2,
@@ -441,6 +519,8 @@ rm(
   GS_decile_max_rain5,
   GS_decile_max_rain6,
   GS_decile_max_rain7,
+  GS_decile_max_rain8,
+  GS_decile_max_rain9,
   
   GS_deciles_names1,
   GS_deciles_names2,
@@ -449,6 +529,8 @@ rm(
   GS_deciles_names5,
   GS_deciles_names6,
   GS_deciles_names7,
+  GS_deciles_names8,
+  GS_deciles_names9,
    
   gs_rain1,
   gs_rain2,
@@ -456,9 +538,9 @@ rm(
   gs_rain4,
   gs_rain5,
   gs_rain6,
-  gs_rain7
-  
-  
+  gs_rain7,
+  gs_rain8,
+  gs_rain9
 )
 
 GS_decile_table <- as.data.frame(GS_decile_table)
@@ -492,7 +574,9 @@ GS_decile_table$defined_date <- factor(
     "from 1-4to 14-10",
     "from 1-5to 14-10",
     "from 1-6to 14-10",
+    "from 15-6to 14-10",
     "from 1-7to 14-10",
+    "from 15-7to 14-10",
     "from 1-8to 14-10",
     "from 1-9to 14-10",
     "from 1-10to 14-10"
