@@ -69,7 +69,7 @@ list_of_file <- as.data.frame(list_of_file)
 * Shiny application would be nice but then I have problem saving the output.
 
 ```{r sites_selction, echo=FALSE}
- site_selected <- "21012"
+ site_selected <- "76000"
 print(site_selected)
 ```
 ## Select the **GS year**
@@ -79,7 +79,7 @@ print(site_selected)
 ```{r define year, echo=FALSE}
 
 ### summer dates after GS
-year <- "2025"
+year <- "2026"
 print(paste0("Year = ", year))
 ```
 
@@ -119,6 +119,7 @@ start <- paste0(year, "-04-01")
 
 defined_date1 <- paste0(year, "-04-01")
 defined_date2 <- paste0(year, "-05-01")
+#defined_date3 <- paste0(year, "-05-24") #custom date
 defined_date3 <- paste0(year, "-06-01")
 defined_date4 <- paste0(year, "-06-15")
 defined_date5 <- paste0(year, "-07-01")
@@ -300,6 +301,7 @@ df_gs <- df_gs %>%
   mutate(Defined_date_common_year = case_when(
     defined_date == "from 1-4to 14-10" ~ paste0(year, "-04-01"),
     defined_date == "from 1-5to 14-10" ~ paste0(year, "-05-01"),
+    #defined_date == "from 1-6to 14-10" ~ paste0(year, "-05-24"),#custom date
     defined_date == "from 1-6to 14-10" ~ paste0(year, "-06-01"),
     defined_date == "from 15-6to 14-10" ~ paste0(year, "-06-15"),
     defined_date == "from 1-7to 14-10" ~ paste0(year, "-07-01"),
@@ -505,7 +507,8 @@ df_plot_long$defined_date <- factor(
   levels = c(
     "2023-04-01",
     "2023-05-01",
-    "2023-06-01",
+    "2023-05-24",
+    #"2023-06-01",
     "2023-06-15",
     "2023-07-01",
     "2023-07-15",
